@@ -147,7 +147,7 @@ function Dashboard() {
       toast.error("Level 100 and Level 200 GPA are required and must be between 0.00 and 4.00");
       return;
     }
-    const inputs = { level100_gpa: l1, level200_gpa: l2 } as Inputs;
+    const optional: Record<string, number> = {};
     for (const f of OPTIONAL_FIELDS) {
       const v = toNumber(form[f.key]);
       if (v !== null) {
@@ -155,9 +155,10 @@ function Dashboard() {
           toast.error(`${f.label} must be between 0 and ${f.max}`);
           return;
         }
-        (inputs as Record<string, number>)[f.key] = v;
+        optional[f.key] = v;
       }
     }
+    const inputs = { level100_gpa: l1, level200_gpa: l2, ...optional } as Inputs;
 
     const r = predict(inputs);
     setResult(r);
@@ -169,7 +170,10 @@ function Dashboard() {
     if (uid) {
       const { error } = await supabase.from("predictions").insert({
         user_id: uid,
-        ...inputs,
+        level100_gpa: l1,
+        level200_gpa: l2,
+        ...optional,
+
         predicted_gpa: Number(r.gpa.toFixed(4)),
         predicted_class: r.classification,
         pass_fail: r.passFail,
