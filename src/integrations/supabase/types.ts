@@ -14,7 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      actual_outcomes: {
+        Row: {
+          actual_gpa: number
+          created_at: string
+          id: string
+          notes: string | null
+          prediction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          actual_gpa: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          prediction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          actual_gpa?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          prediction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actual_outcomes_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      predictions: {
+        Row: {
+          assignment_score: number | null
+          attendance_pct: number | null
+          confidence_high: number
+          confidence_low: number
+          course_credits: number | null
+          created_at: string
+          id: string
+          level100_gpa: number
+          level200_gpa: number
+          model_version: string
+          participation_score: number | null
+          pass_fail: string
+          practical_score: number | null
+          predicted_class: string
+          predicted_gpa: number
+          presentation_score: number | null
+          quiz1_score: number | null
+          quiz2_score: number | null
+          study_hours_per_week: number | null
+          user_id: string
+        }
+        Insert: {
+          assignment_score?: number | null
+          attendance_pct?: number | null
+          confidence_high: number
+          confidence_low: number
+          course_credits?: number | null
+          created_at?: string
+          id?: string
+          level100_gpa: number
+          level200_gpa: number
+          model_version?: string
+          participation_score?: number | null
+          pass_fail: string
+          practical_score?: number | null
+          predicted_class: string
+          predicted_gpa: number
+          presentation_score?: number | null
+          quiz1_score?: number | null
+          quiz2_score?: number | null
+          study_hours_per_week?: number | null
+          user_id: string
+        }
+        Update: {
+          assignment_score?: number | null
+          attendance_pct?: number | null
+          confidence_high?: number
+          confidence_low?: number
+          course_credits?: number | null
+          created_at?: string
+          id?: string
+          level100_gpa?: number
+          level200_gpa?: number
+          model_version?: string
+          participation_score?: number | null
+          pass_fail?: string
+          practical_score?: number | null
+          predicted_class?: string
+          predicted_gpa?: number
+          presentation_score?: number | null
+          quiz1_score?: number | null
+          quiz2_score?: number | null
+          study_hours_per_week?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          programme: string | null
+          student_id: string | null
+          study_centre: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          programme?: string | null
+          student_id?: string | null
+          study_centre?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          programme?: string | null
+          student_id?: string | null
+          study_centre?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
