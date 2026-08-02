@@ -159,4 +159,4 @@ export const GRADE_SCALE = [
   { grade: "D", range: "50 - 54", point: 1.0 },
   { grade: "E", range: "45 - 49", point: 0.5 },
   { grade: "F", range: "0 - 44", point: 0.0 },
-) as unknown as { grade: string; range: string; point: number }[];
+];
