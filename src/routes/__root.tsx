@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "UCC CoDE CGPA Predictor" },
+      { title: "SSPS | UCC Students Success Prediction System" },
       {
         name: "description",
         content:
           "Predictive CGPA and degree classification system for University of Cape Coast, College of Distance Education students.",
       },
-      { property: "og:title", content: "UCC CoDE CGPA Predictor" },
+      { property: "og:title", content: "SSPS | UCC Students Success Prediction System" },
       {
         property: "og:description",
         content:

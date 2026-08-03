@@ -15,13 +15,13 @@ export const Route = createFileRoute("/auth")({
   validateSearch: z.object({ mode: z.enum(["signin", "signup"]).optional() }),
   head: () => ({
     meta: [
-      { title: "Sign in or register | UCC CoDE CGPA Predictor" },
+      { title: "Sign in or register | SSPS | UCC Students Success Prediction System" },
       {
         name: "description",
         content:
           "Register or sign in to the UCC College of Distance Education CGPA prediction system with your email, phone number or Google account.",
       },
-      { property: "og:title", content: "Sign in | UCC CoDE CGPA Predictor" },
+      { property: "og:title", content: "Sign in | SSPS | UCC Students Success Prediction System" },
       {
         property: "og:description",
         content: "Secure student access to the UCC CoDE CGPA prediction system.",

@@ -41,13 +41,13 @@ import { buildRecommendations } from "@/lib/recommendations";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Prediction dashboard | UCC CoDE CGPA Predictor" },
+      { title: "Prediction dashboard | SSPS | UCC Students Success Prediction System" },
       {
         name: "description",
         content:
           "Enter your Level 100 and Level 200 GPAs and continuous assessment scores to forecast your final CGPA and degree classification.",
       },
-      { property: "og:title", content: "Prediction dashboard | UCC CoDE CGPA Predictor" },
+      { property: "og:title", content: "Prediction dashboard | SSPS | UCC Students Success Prediction System" },
       {
         property: "og:description",
         content: "Your personal CGPA forecast, recommendations and prediction history.",
