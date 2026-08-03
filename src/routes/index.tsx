@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { GraduationCap, ShieldCheck, LineChart, Sparkles, ArrowRight, Target } from "lucide-react";
+import { GraduationCap, ShieldCheck, LineChart, ArrowRight, Target } from "lucide-react";
 
-import heroImage from "@/assets/graduates-hero.jpg";
+import heroImage from "@/assets/ucc-graduation.jpg.asset.json";
 import { Crests } from "@/components/Crests";
 import { Button } from "@/components/ui/button";
 import { MODEL_METRICS, CLASS_BANDS } from "@/lib/model";
@@ -9,13 +9,13 @@ import { MODEL_METRICS, CLASS_BANDS } from "@/lib/model";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "UCC CoDE CGPA Predictor | Final CGPA & Class Forecast" },
+      { title: "SSPS | UCC Students Success Prediction System" },
       {
         name: "description",
         content:
-          "Machine-learning CGPA prediction for University of Cape Coast, College of Distance Education students. Forecast your final CGPA and degree class from Level 100 and 200 GPAs.",
+          "SSPS, the UCC Students Success Prediction System, forecasts your final CGPA and degree class for College of Distance Education and non-residential students.",
       },
-      { property: "og:title", content: "UCC CoDE CGPA Predictor" },
+      { property: "og:title", content: "SSPS | UCC Students Success Prediction System" },
       {
         property: "og:description",
         content:
