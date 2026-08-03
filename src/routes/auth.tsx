@@ -142,7 +142,10 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="hero-overlay relative hidden flex-col justify-between p-12 lg:flex">
-        <Crests size={64} className="rounded-lg bg-background/95 px-4 py-2" />
+        <Crests
+          size={64}
+          className="rounded-xl border border-gold/50 bg-primary-foreground/95 px-5 py-3 shadow-[0_12px_34px_-16px_oklch(0.2_0.05_259/0.75)]"
+        />
         <div>
           <h1 className="max-w-md text-4xl leading-tight text-primary-foreground">
             Your academic journey, forecast with evidence.
