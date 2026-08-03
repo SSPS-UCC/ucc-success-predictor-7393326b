@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { GraduationCap, ShieldCheck, LineChart, Sparkles, ArrowRight, Target } from "lucide-react";
+import { GraduationCap, ShieldCheck, LineChart, ArrowRight, Target } from "lucide-react";
 
-import heroImage from "@/assets/graduates-hero.jpg";
+import heroImage from "@/assets/ucc-graduation.jpg.asset.json";
 import { Crests } from "@/components/Crests";
 import { Button } from "@/components/ui/button";
 import { MODEL_METRICS, CLASS_BANDS } from "@/lib/model";
@@ -9,13 +9,13 @@ import { MODEL_METRICS, CLASS_BANDS } from "@/lib/model";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "UCC CoDE CGPA Predictor | Final CGPA & Class Forecast" },
+      { title: "SSPS | UCC Students Success Prediction System" },
       {
         name: "description",
         content:
-          "Machine-learning CGPA prediction for University of Cape Coast, College of Distance Education students. Forecast your final CGPA and degree class from Level 100 and 200 GPAs.",
+          "SSPS, the UCC Students Success Prediction System, forecasts your final CGPA and degree class for College of Distance Education and non-residential students.",
       },
-      { property: "og:title", content: "UCC CoDE CGPA Predictor" },
+      { property: "og:title", content: "SSPS | UCC Students Success Prediction System" },
       {
         property: "og:description",
         content:
@@ -34,9 +34,12 @@ function Landing() {
       <header className="absolute inset-x-0 top-0 z-20">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
           <div className="flex items-center gap-3">
-            <Crests size={44} className="rounded-md bg-background/90 px-3 py-1.5 backdrop-blur" />
+            <Crests
+              size={44}
+              className="rounded-xl border border-gold/50 bg-primary-foreground/95 px-4 py-2 shadow-[0_10px_30px_-12px_oklch(0.2_0.05_259/0.7)] ring-1 ring-inset ring-primary/10 backdrop-blur"
+            />
             <span className="hidden text-sm font-semibold text-primary-foreground sm:block">
-              UCC &middot; College of Distance Education
+              SSPS &middot; UCC Students Success Prediction System
             </span>
           </div>
           <Button asChild variant="secondary" size="sm">
@@ -47,18 +50,16 @@ function Landing() {
 
       <section className="relative isolate overflow-hidden">
         <img
-          src={heroImage}
+          src={heroImage.url}
           alt="University of Cape Coast graduates celebrating in gowns and mortarboard caps"
-          width={1920}
-          height={1088}
+          width={1440}
+          height={960}
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="hero-overlay absolute inset-0" />
         <div className="relative mx-auto max-w-6xl px-5 pb-24 pt-40 sm:pt-48">
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-primary/40 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-gold backdrop-blur">
-            <Sparkles className="h-3.5 w-3.5" /> Machine learning &middot; CGPA 4.00 scale
-          </p>
           <h1 className="max-w-3xl text-4xl leading-tight text-primary-foreground sm:text-6xl">
+
             Know your final CGPA before final year does.
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-primary-foreground/85 sm:text-lg">

@@ -41,13 +41,13 @@ import { buildRecommendations } from "@/lib/recommendations";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Prediction dashboard | UCC CoDE CGPA Predictor" },
+      { title: "Prediction dashboard | SSPS | UCC Students Success Prediction System" },
       {
         name: "description",
         content:
           "Enter your Level 100 and Level 200 GPAs and continuous assessment scores to forecast your final CGPA and degree classification.",
       },
-      { property: "og:title", content: "Prediction dashboard | UCC CoDE CGPA Predictor" },
+      { property: "og:title", content: "Prediction dashboard | SSPS | UCC Students Success Prediction System" },
       {
         property: "og:description",
         content: "Your personal CGPA forecast, recommendations and prediction history.",
@@ -225,10 +225,13 @@ function Dashboard() {
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <div className="flex items-center gap-4">
-            <Crests size={40} />
+            <Crests
+              size={40}
+              className="rounded-xl border border-gold/50 bg-card px-3 py-1.5 shadow-[0_8px_24px_-14px_oklch(0.2_0.05_259/0.7)]"
+            />
             <div className="hidden sm:block">
-              <p className="text-sm font-semibold leading-tight">CGPA Prediction System</p>
-              <p className="text-xs text-muted-foreground">UCC &middot; College of Distance Education</p>
+              <p className="text-sm font-semibold leading-tight">SSPS</p>
+              <p className="text-xs text-muted-foreground">UCC Students Success Prediction System</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
