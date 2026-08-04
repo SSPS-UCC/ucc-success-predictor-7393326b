@@ -411,6 +411,24 @@ function Dashboard() {
                 </div>
               </section>
             )}
+
+            {(staffNotes.data?.length ?? 0) > 0 && (
+              <section className="panel p-6">
+                <h2 className="flex items-center gap-2 text-lg">
+                  <Info className="h-4 w-4 text-accent" /> Notices from CoDE staff
+                </h2>
+                <div className="mt-4 space-y-4">
+                  {(staffNotes.data ?? []).map((n) => (
+                    <article key={n.id} className="rounded-lg border-l-4 border-gold bg-secondary/50 p-4">
+                      <h3 className="text-sm font-semibold">{n.title}</h3>
+                      <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                        {n.body}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         </div>
 
