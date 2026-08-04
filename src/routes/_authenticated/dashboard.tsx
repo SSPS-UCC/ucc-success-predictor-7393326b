@@ -98,6 +98,7 @@ function toNumber(v: string): number | null {
 function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isStaff } = useRoles();
   const [form, setForm] = useState<FormState>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<ReturnType<typeof predict> | null>(null);
