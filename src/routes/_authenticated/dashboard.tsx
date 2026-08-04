@@ -99,6 +99,18 @@ function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { isStaff } = useRoles();
+  const staffNotes = useQuery({
+    queryKey: ["recommendation-notes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("recommendation_notes")
+        .select("id, title, body, category")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const [form, setForm] = useState<FormState>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<ReturnType<typeof predict> | null>(null);
