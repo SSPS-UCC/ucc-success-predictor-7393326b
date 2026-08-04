@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Target,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Line,
@@ -37,6 +38,7 @@ import {
   type FeatureKey,
 } from "@/lib/model";
 import { buildRecommendations } from "@/lib/recommendations";
+import { useRoles } from "@/hooks/useRoles";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -96,6 +98,19 @@ function toNumber(v: string): number | null {
 function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isStaff } = useRoles();
+  const staffNotes = useQuery({
+    queryKey: ["recommendation-notes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("recommendation_notes")
+        .select("id, title, body, category")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const [form, setForm] = useState<FormState>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<ReturnType<typeof predict> | null>(null);
@@ -238,6 +253,13 @@ function Dashboard() {
             <span className="hidden text-sm text-muted-foreground sm:block">
               {profile.data?.full_name ?? "Student"}
             </span>
+            {isStaff ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/admin">
+                  <ShieldCheck className="mr-2 h-3.5 w-3.5" /> Staff console
+                </Link>
+              </Button>
+            ) : null}
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="mr-2 h-3.5 w-3.5" /> Sign out
             </Button>
@@ -396,6 +418,24 @@ function Dashboard() {
                         {a.title}
                       </h3>
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{a.body}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {(staffNotes.data?.length ?? 0) > 0 && (
+              <section className="panel p-6">
+                <h2 className="flex items-center gap-2 text-lg">
+                  <Info className="h-4 w-4 text-accent" /> Notices from CoDE staff
+                </h2>
+                <div className="mt-4 space-y-4">
+                  {(staffNotes.data ?? []).map((n) => (
+                    <article key={n.id} className="rounded-lg border-l-4 border-gold bg-secondary/50 p-4">
+                      <h3 className="text-sm font-semibold">{n.title}</h3>
+                      <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                        {n.body}
+                      </p>
                     </article>
                   ))}
                 </div>
