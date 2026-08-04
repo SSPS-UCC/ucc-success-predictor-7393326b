@@ -188,7 +188,7 @@ function AdminConsole() {
       category: note.category,
       created_by: auth.user?.id ?? null,
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setNote({ title: "", body: "", category: "general" });
     toast.success("Recommendation published.");
     queryClient.invalidateQueries({ queryKey: ["admin", "notes"] });
@@ -199,31 +199,31 @@ function AdminConsole() {
       .from("recommendation_notes")
       .update({ is_active: isActive })
       .eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     queryClient.invalidateQueries({ queryKey: ["admin", "notes"] });
   }
 
   async function deleteNote(id: string) {
     const { error } = await supabase.from("recommendation_notes").delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Recommendation removed.");
     queryClient.invalidateQueries({ queryKey: ["admin", "notes"] });
   }
 
   async function grantRole(e: React.FormEvent) {
     e.preventDefault();
-    if (!roleTarget) return toast.error("Pick a student or staff member first.");
+    if (!roleTarget) { toast.error("Pick a student or staff member first."); return; }
     const { error } = await supabase
       .from("user_roles")
       .insert({ user_id: roleTarget, role: roleValue });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Role granted.");
     queryClient.invalidateQueries({ queryKey: ["admin", "roles"] });
   }
 
   async function revokeRole(id: string) {
     const { error } = await supabase.from("user_roles").delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Role revoked.");
     queryClient.invalidateQueries({ queryKey: ["admin", "roles"] });
   }
