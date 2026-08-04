@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Target,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Line,
@@ -37,6 +38,7 @@ import {
   type FeatureKey,
 } from "@/lib/model";
 import { buildRecommendations } from "@/lib/recommendations";
+import { useRoles } from "@/hooks/useRoles";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -238,6 +240,13 @@ function Dashboard() {
             <span className="hidden text-sm text-muted-foreground sm:block">
               {profile.data?.full_name ?? "Student"}
             </span>
+            {isStaff ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/admin">
+                  <ShieldCheck className="mr-2 h-3.5 w-3.5" /> Staff console
+                </Link>
+              </Button>
+            ) : null}
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="mr-2 h-3.5 w-3.5" /> Sign out
             </Button>
