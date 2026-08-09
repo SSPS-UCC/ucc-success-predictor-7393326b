@@ -144,7 +144,7 @@ function AuthPage() {
       <div className="hero-overlay relative hidden flex-col justify-between p-12 lg:flex">
         <Crests
           size={64}
-          className="rounded-xl border border-gold/50 bg-primary-foreground/95 px-5 py-3 shadow-[0_12px_34px_-16px_oklch(0.2_0.05_259/0.75)]"
+          className="w-fit self-start rounded-xl border border-gold/50 bg-primary-foreground/95 px-5 py-3 shadow-[0_12px_34px_-16px_oklch(0.2_0.05_259/0.75)]"
         />
         <div>
           <h1 className="max-w-md text-4xl leading-tight text-primary-foreground">
