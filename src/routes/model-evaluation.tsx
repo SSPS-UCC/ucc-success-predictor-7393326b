@@ -141,12 +141,12 @@ function ModelEvaluation() {
             <div className="mt-5 h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={MODELS.map((m) => ({ name: m.name, MAE: m.mae, RMSE: m.rmse }))}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                   <YAxis domain={[0, 0.25]} tick={{ fontSize: 12 }} />
                   <RTooltip />
-                  <Bar dataKey="MAE" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="RMSE" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="MAE" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="RMSE" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -160,11 +160,11 @@ function ModelEvaluation() {
             <div className="mt-5 h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={MODELS.map((m) => ({ name: m.name, "R\u00b2": m.r2 }))}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                   <YAxis domain={[0, 1]} tick={{ fontSize: 12 }} />
                   <RTooltip />
-                  <Bar dataKey="R&#178;" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey={"R\u00b2"} fill="var(--primary)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -180,7 +180,7 @@ function ModelEvaluation() {
           <div className="mt-5 h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={COEF_DATA} layout="vertical" margin={{ left: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis type="number" tick={{ fontSize: 12 }} />
                 <YAxis type="category" dataKey="label" width={140} tick={{ fontSize: 12 }} />
                 <RTooltip />
@@ -188,7 +188,7 @@ function ModelEvaluation() {
                   {COEF_DATA.map((d) => (
                     <Cell
                       key={d.label}
-                      fill={d.value >= 0 ? "hsl(var(--primary))" : "hsl(var(--destructive))"}
+                      fill={d.value >= 0 ? "var(--primary)" : "var(--destructive)"}
                     />
                   ))}
                 </Bar>
