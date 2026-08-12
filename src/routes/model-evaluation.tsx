@@ -128,7 +128,7 @@ function ModelEvaluation() {
           />
           <Stat
             icon={BarChart3}
-            label="R\u00b2"
+            label="R²"
             value={MODEL_METRICS.r2.toFixed(3)}
             caption="Coefficient of determination — the model explains about 84.2% of the variation in final CGPA."
           />
