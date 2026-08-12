@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ModelEvaluationRouteImport } from './routes/model-evaluation'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
@@ -29,6 +30,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ModelEvaluationRoute = ModelEvaluationRouteImport.update({
+  id: '/model-evaluation',
+  path: '/model-evaluation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -43,12 +49,14 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/model-evaluation': typeof ModelEvaluationRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/model-evaluation': typeof ModelEvaluationRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
 }
@@ -57,19 +65,21 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/model-evaluation': typeof ModelEvaluationRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/admin' | '/dashboard'
+  fullPaths: '/' | '/auth' | '/model-evaluation' | '/admin' | '/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin' | '/dashboard'
+  to: '/' | '/auth' | '/model-evaluation' | '/admin' | '/dashboard'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/model-evaluation'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
   fileRoutesById: FileRoutesById
@@ -78,6 +88,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ModelEvaluationRoute: typeof ModelEvaluationRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -101,6 +112,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/model-evaluation': {
+      id: '/model-evaluation'
+      path: '/model-evaluation'
+      fullPath: '/model-evaluation'
+      preLoaderRoute: typeof ModelEvaluationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -137,6 +155,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ModelEvaluationRoute: ModelEvaluationRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
