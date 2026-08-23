@@ -595,6 +595,54 @@ function AdminConsole() {
           </TabsContent>
 
           <TabsContent value="results" className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div className="panel p-6 lg:col-span-2">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg">Prediction activity &amp; average CGPA</h2>
+                  <p className="text-xs text-muted-foreground">
+                    Bars: predictions submitted per day. Line: average predicted CGPA that day.
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={exportPredictions}>
+                  <Download className="mr-2 h-3.5 w-3.5" /> Export predictions CSV
+                </Button>
+              </div>
+              {analytics.length > 0 ? (
+                <div className="mt-5 h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={analytics}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                      <YAxis yAxisId="left" allowDecimals={false} tick={{ fontSize: 11 }} />
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        domain={[0, 4]}
+                        tick={{ fontSize: 11 }}
+                      />
+                      <RTooltip />
+                      <Bar
+                        yAxisId="left"
+                        dataKey="predictions"
+                        fill="var(--primary)"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="avgGpa"
+                        stroke="var(--gold, var(--chart-2))"
+                        strokeWidth={2.5}
+                        dot={{ r: 3 }}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-muted-foreground">No predictions recorded yet.</p>
+              )}
+            </div>
+
             <div className="panel p-6">
               <h2 className="text-lg">Predicted classification spread</h2>
               <div className="mt-4 space-y-3">
