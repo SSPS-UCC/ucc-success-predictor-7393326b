@@ -49,6 +49,60 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_label: string | null
+          created_at: string
+          detail: Json
+          entity: string
+          entity_id: string | null
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_label?: string | null
+          created_at?: string
+          detail?: Json
+          entity: string
+          entity_id?: string | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_label?: string | null
+          created_at?: string
+          detail?: Json
+          entity?: string
+          entity_id?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      branding_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       predictions: {
         Row: {
           assignment_score: number | null
@@ -151,6 +205,42 @@ export type Database = {
         }
         Relationships: []
       }
+      recommendation_note_versions: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          edited_by: string | null
+          id: string
+          is_active: boolean
+          note_id: string
+          title: string
+          version: number
+        }
+        Insert: {
+          body: string
+          category: string
+          created_at?: string
+          edited_by?: string | null
+          id?: string
+          is_active: boolean
+          note_id: string
+          title: string
+          version: number
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          edited_by?: string | null
+          id?: string
+          is_active?: boolean
+          note_id?: string
+          title?: string
+          version?: number
+        }
+        Relationships: []
+      }
       recommendation_notes: {
         Row: {
           body: string
@@ -179,6 +269,39 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      recommendation_templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
           title?: string
           updated_at?: string
         }

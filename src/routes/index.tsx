@@ -43,13 +43,11 @@ function Landing() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm" className="hidden text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground sm:inline-flex">
-              <Link to="/model-evaluation">Model evaluation</Link>
-            </Button>
             <Button asChild variant="secondary" size="sm">
               <Link to="/auth">Sign in</Link>
             </Button>
           </div>
+
         </nav>
       </header>
 

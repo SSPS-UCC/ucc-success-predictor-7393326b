@@ -12,7 +12,9 @@ import {
   AlertTriangle,
   Target,
   ShieldCheck,
+  Download,
 } from "lucide-react";
+
 import {
   Line,
   LineChart,
@@ -38,7 +40,10 @@ import {
   type FeatureKey,
 } from "@/lib/model";
 import { buildRecommendations } from "@/lib/recommendations";
+import { logAudit } from "@/lib/audit";
+import { downloadCsv, stamp } from "@/lib/csv";
 import { useRoles } from "@/hooks/useRoles";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -197,10 +202,43 @@ function Dashboard() {
         model_version: MODEL_VERSION,
       });
       if (error) toast.error("Prediction shown, but could not be saved.");
-      else queryClient.invalidateQueries({ queryKey: ["predictions"] });
+      else {
+        queryClient.invalidateQueries({ queryKey: ["predictions"] });
+        void logAudit("create", "prediction", null, {
+          predicted_gpa: Number(r.gpa.toFixed(2)),
+          predicted_class: r.classification,
+          model_version: MODEL_VERSION,
+        });
+      }
     }
     setSaving(false);
     toast.success("Prediction complete");
+  }
+
+  function exportHistory() {
+    const rows = history.data ?? [];
+    if (rows.length === 0) {
+      toast.error("You have no saved predictions to export yet.");
+      return;
+    }
+    downloadCsv(
+      `ssps-my-predictions-${stamp()}.csv`,
+      rows.map((p) => ({
+        date: new Date(p.created_at).toISOString(),
+        level100_gpa: p.level100_gpa,
+        level200_gpa: p.level200_gpa,
+        attendance_pct: p.attendance_pct ?? "",
+        study_hours_per_week: p.study_hours_per_week ?? "",
+        predicted_gpa: Number(p.predicted_gpa).toFixed(2),
+        predicted_class: p.predicted_class,
+        pass_fail: p.pass_fail,
+        confidence_low: Number(p.confidence_low).toFixed(2),
+        confidence_high: Number(p.confidence_high).toFixed(2),
+        model_version: p.model_version,
+      })),
+    );
+    void logAudit("export_csv", "prediction", null, { rows: rows.length });
+    toast.success("Your prediction history has been downloaded.");
   }
 
   async function submitActual(e: React.FormEvent) {
@@ -222,9 +260,11 @@ function Dashboard() {
     if (error) toast.error(error.message);
     else {
       setActual("");
+      void logAudit("create", "actual_outcome", latest?.id ?? null, { actual_gpa: v });
       toast.success("Thank you - your real result helps improve the model for everyone.");
     }
   }
+
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -446,9 +486,15 @@ function Dashboard() {
 
         <section className="mt-10 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           <div className="panel p-6">
-            <h2 className="flex items-center gap-2 text-lg">
-              <History className="h-4 w-4 text-accent" /> Prediction history
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="flex items-center gap-2 text-lg">
+                <History className="h-4 w-4 text-accent" /> Prediction history
+              </h2>
+              <Button variant="outline" size="sm" onClick={exportHistory}>
+                <Download className="mr-2 h-3.5 w-3.5" /> Export CSV
+              </Button>
+            </div>
+
             {chartData.length > 1 ? (
               <div className="mt-5 h-56">
                 <ResponsiveContainer width="100%" height="100%">

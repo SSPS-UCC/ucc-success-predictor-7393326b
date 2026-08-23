@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, BarChart3, CheckCircle2, Gauge, Sigma } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { ArrowLeft, BarChart3, CheckCircle2, Gauge, Lock, Printer, Sigma, FileCode2 } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -13,16 +14,18 @@ import {
 
 import { Crests } from "@/components/Crests";
 import { Button } from "@/components/ui/button";
+import { useRoles } from "@/hooks/useRoles";
+import { logAudit } from "@/lib/audit";
 import { COEF, FEATURE_LABELS, MODEL_METRICS, MODEL_VERSION, type FeatureKey } from "@/lib/model";
 
-export const Route = createFileRoute("/model-evaluation")({
+export const Route = createFileRoute("/_authenticated/model-evaluation")({
   head: () => ({
     meta: [
       { title: "Model evaluation | SSPS UCC Students Success Prediction System" },
       {
         name: "description",
         content:
-          "Evaluation of the SSPS CGPA prediction model: MAE, RMSE and R-squared for Ridge Regression and the Random Forest baseline, with charts and interpretation.",
+          "Staff-only evaluation dashboard for the SSPS CGPA prediction model: MAE, RMSE and R-squared for Ridge Regression and the Random Forest baseline, with charts and interpretation.",
       },
       { property: "og:title", content: "Model evaluation | SSPS" },
       {
@@ -39,20 +42,8 @@ export const Route = createFileRoute("/model-evaluation")({
 
 /** Held-out test-set results recorded during training (scikit-learn, 80/20 split). */
 const MODELS = [
-  {
-    name: "Ridge Regression",
-    deployed: true,
-    mae: 0.171,
-    rmse: 0.204,
-    r2: 0.842,
-  },
-  {
-    name: "Random Forest",
-    deployed: false,
-    mae: 0.166,
-    rmse: 0.205,
-    r2: 0.842,
-  },
+  { name: "Ridge Regression", deployed: true, mae: 0.171, rmse: 0.204, r2: 0.842 },
+  { name: "Random Forest", deployed: false, mae: 0.166, rmse: 0.205, r2: 0.842 },
 ] as const;
 
 const COEF_DATA = (Object.keys(COEF) as FeatureKey[])
@@ -83,34 +74,84 @@ function Stat({
 }
 
 function ModelEvaluation() {
+  const navigate = useNavigate();
+  const { isStaff, isLoading } = useRoles();
+
+  useEffect(() => {
+    if (isStaff) void logAudit("view", "model_evaluation", null, {});
+  }, [isStaff]);
+
+  function downloadPdf() {
+    void logAudit("export_pdf", "model_evaluation", null, {});
+    window.print();
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
+        Checking your access&hellip;
+      </div>
+    );
+  }
+
+  if (!isStaff) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-5">
+        <div className="panel max-w-md p-8 text-center">
+          <Lock className="mx-auto h-8 w-8 text-muted-foreground" />
+          <h1 className="mt-4 text-xl">Staff access only</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            The model evaluation dashboard is restricted to CoDE staff and administrators.
+          </p>
+          <Button className="mt-6" onClick={() => navigate({ to: "/dashboard" })}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to my dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-4">
+      <header className="border-b border-border bg-card print:hidden">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-4">
           <div className="flex items-center gap-3">
             <Crests
               size={36}
               className="w-fit rounded-xl border border-gold/50 bg-primary-foreground px-3 py-1.5 shadow-sm"
             />
-            <span className="hidden text-sm font-semibold sm:block">SSPS &middot; Model evaluation</span>
+            <span className="hidden text-sm font-semibold sm:block">
+              SSPS &middot; Model evaluation
+            </span>
           </div>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back home
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <a href="/ssps_model_training.ipynb" download>
+                <FileCode2 className="mr-2 h-4 w-4" /> Jupyter notebook
+              </a>
+            </Button>
+            <Button size="sm" onClick={downloadPdf}>
+              <Printer className="mr-2 h-4 w-4" /> Download PDF
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/admin">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Staff console
+              </Link>
+            </Button>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-5 py-12">
+      <main className="mx-auto max-w-5xl px-5 py-12 print:py-4">
         <h1 className="text-3xl font-semibold sm:text-4xl">Model evaluation</h1>
         <p className="mt-4 max-w-3xl leading-relaxed text-muted-foreground">
           The deployed predictor is a cross-validated{" "}
           <strong className="text-foreground">Ridge Regression</strong> (
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{MODEL_VERSION}</code>) trained in
-          Python (scikit-learn) on {MODEL_METRICS.trainingRows.toLocaleString()} College of Distance
-          Education student records. All figures below come from the held-out test split, i.e. records
-          the model never saw during training, and are expressed in CGPA points on the UCC 4.00 scale.
+          Python (scikit-learn, Jupyter Notebook) on{" "}
+          {MODEL_METRICS.trainingRows.toLocaleString()} College of Distance Education student
+          records. All figures below come from the held-out test split, i.e. records the model never
+          saw during training, and are expressed in CGPA points on the UCC 4.00 scale.
         </p>
 
         <section className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -241,39 +282,48 @@ function ModelEvaluation() {
         <section className="mt-12 space-y-4 rounded-xl border border-border bg-muted/30 p-6 leading-relaxed">
           <h2 className="text-xl font-semibold">Interpretation</h2>
           <p>
-            <strong>Mean Absolute Error (MAE = {MODEL_METRICS.mae.toFixed(3)}).</strong> On average the
-            system's forecast differs from a student's true final CGPA by about 0.17 of a grade point.
-            Because UCC degree classification bands are 0.60 CGPA wide (for example 3.00&ndash;3.59 for
-            Second Class Upper), an error of this size is comfortably inside a single band, so the
-            predicted classification is dependable for guidance purposes.
+            <strong>Mean Absolute Error (MAE = {MODEL_METRICS.mae.toFixed(3)}).</strong> On average
+            the system's forecast differs from a student's true final CGPA by about 0.17 of a grade
+            point. Because UCC degree classification bands are 0.60 CGPA wide (for example
+            3.00&ndash;3.59 for Second Class Upper), an error of this size is comfortably inside a
+            single band, so the predicted classification is dependable for guidance purposes.
           </p>
           <p>
-            <strong>Root Mean Squared Error (RMSE = {MODELS[0].rmse.toFixed(3)}).</strong> RMSE penalises
-            large mistakes more heavily than MAE. The two values are close (0.204 against 0.171), which
-            indicates the errors are evenly spread and the model is not producing a few wildly wrong
-            predictions. This residual spread is what generates the 80% confidence range shown to each
-            student alongside their predicted CGPA.
+            <strong>Root Mean Squared Error (RMSE = {MODELS[0].rmse.toFixed(3)}).</strong> RMSE
+            penalises large mistakes more heavily than MAE. The two values are close (0.204 against
+            0.171), which indicates the errors are evenly spread and the model is not producing a
+            few wildly wrong predictions. This residual spread is what generates the 80% confidence
+            range shown to each student alongside their predicted CGPA.
           </p>
           <p>
-            <strong>Coefficient of determination (R&sup2; = {MODEL_METRICS.r2.toFixed(3)}).</strong> The
-            model accounts for approximately 84.2% of the variation in final CGPA across the held-out
-            students; the remaining 15.8% reflects factors not captured in the dataset, such as personal
-            circumstances, health, and work commitments common among distance-education learners. An
-            R&sup2; above 0.80 is regarded as a strong fit for educational data mining.
+            <strong>Coefficient of determination (R&sup2; = {MODEL_METRICS.r2.toFixed(3)}).</strong>{" "}
+            The model accounts for approximately 84.2% of the variation in final CGPA across the
+            held-out students; the remaining 15.8% reflects factors not captured in the dataset,
+            such as personal circumstances, health, and work commitments common among
+            distance-education learners. An R&sup2; above 0.80 is regarded as a strong fit for
+            educational data mining.
           </p>
           <p>
             <strong>Choice of algorithm.</strong> Ridge Regression and Random Forest achieved an
-            identical R&sup2; of 0.842, with the Random Forest only 0.005 CGPA better on MAE. Since the
-            performance difference is negligible, Ridge Regression was deployed because its coefficients
-            can be read directly, allowing SSPS to tell a student exactly which factor is raising or
-            lowering their forecast and to attach concrete, explainable recommendations to it.
+            identical R&sup2; of 0.842, with the Random Forest only 0.005 CGPA better on MAE. Since
+            the performance difference is negligible, Ridge Regression was deployed because its
+            coefficients can be read directly, allowing SSPS to tell a student exactly which factor
+            is raising or lowering their forecast and to attach concrete, explainable
+            recommendations to it.
           </p>
           <p>
             <strong>Continuous learning.</strong> Students may record their actual final CGPA after
-            graduation. These verified outcomes are stored securely and form the retraining set, so MAE
-            and RMSE are expected to fall further as the system accumulates real UCC CoDE results.
+            graduation. These verified outcomes are stored securely and form the retraining set, so
+            MAE and RMSE are expected to fall further as the system accumulates real UCC CoDE
+            results.
           </p>
         </section>
+
+        <p className="mt-8 text-xs text-muted-foreground">
+          Model training and evaluation were carried out in Python (Jupyter Notebook / Anaconda)
+          using pandas, scikit-learn and matplotlib. The exported coefficients of the trained Ridge
+          model drive the live predictions in this system.
+        </p>
       </main>
     </div>
   );

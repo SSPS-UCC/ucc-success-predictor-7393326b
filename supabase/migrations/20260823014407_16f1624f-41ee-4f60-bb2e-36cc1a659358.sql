@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.snapshot_recommendation_note() FROM PUBLIC, anon, authenticated;
