@@ -184,7 +184,12 @@ function Dashboard() {
         optional[f.key] = v;
       }
     }
-    const inputs = { level100_gpa: l1, level200_gpa: l2, ...optional } as Inputs;
+    const inputs = {
+      level100_gpa: l1,
+      level200_gpa: l2,
+      ...(l3 !== null ? { level300_gpa: l3 } : {}),
+      ...optional,
+    } as Inputs;
 
     const r = predict(inputs);
     setResult(r);
