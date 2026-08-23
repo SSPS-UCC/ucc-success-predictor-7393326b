@@ -53,7 +53,9 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { PasswordStrength } from "@/components/PasswordStrength";
 import { logAudit } from "@/lib/audit";
+import { passwordSchema } from "@/lib/password";
 import { downloadCsv, stamp } from "@/lib/csv";
 import { useRoles, type AppRole } from "@/hooks/useRoles";
 
