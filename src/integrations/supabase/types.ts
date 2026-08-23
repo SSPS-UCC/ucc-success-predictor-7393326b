@@ -114,6 +114,7 @@ export type Database = {
           id: string
           level100_gpa: number
           level200_gpa: number
+          level300_gpa: number | null
           model_version: string
           participation_score: number | null
           pass_fail: string
@@ -136,6 +137,7 @@ export type Database = {
           id?: string
           level100_gpa: number
           level200_gpa: number
+          level300_gpa?: number | null
           model_version?: string
           participation_score?: number | null
           pass_fail: string
@@ -158,6 +160,7 @@ export type Database = {
           id?: string
           level100_gpa?: number
           level200_gpa?: number
+          level300_gpa?: number | null
           model_version?: string
           participation_score?: number | null
           pass_fail?: string
