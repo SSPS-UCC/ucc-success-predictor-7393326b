@@ -213,6 +213,8 @@ function AdminConsole() {
   const [template, setTemplate] = useState({ name: "", title: "", body: "", category: "general" });
   const [roleTarget, setRoleTarget] = useState("");
   const [roleValue, setRoleValue] = useState<AppRole>("staff");
+  const [account, setAccount] = useState({ email: "", password: "", confirm: "" });
+  const [savingAccount, setSavingAccount] = useState(false);
 
 
   const stats = useMemo(() => {
@@ -395,6 +397,44 @@ function AdminConsole() {
     queryClient.invalidateQueries({ queryKey: ["admin", "roles"] });
   }
 
+  async function updateAccount(e: React.FormEvent) {
+    e.preventDefault();
+    const email = account.email.trim().toLowerCase();
+    const wantsPassword = account.password.length > 0;
+    if (!email && !wantsPassword) {
+      toast.error("Enter a new email address or a new password.");
+      return;
+    }
+    if (wantsPassword) {
+      if (account.password.length < 8 || !/[A-Za-z]/.test(account.password) || !/[0-9]/.test(account.password)) {
+        toast.error("Password must be at least 8 characters and include a letter and a number.");
+        return;
+      }
+      if (account.password !== account.confirm) {
+        toast.error("The two passwords do not match.");
+        return;
+      }
+    }
+    setSavingAccount(true);
+    const payload: { email?: string; password?: string } = {};
+    if (email) payload.email = email;
+    if (wantsPassword) payload.password = account.password;
+    const { error } = await supabase.auth.updateUser(payload);
+    setSavingAccount(false);
+    if (error) { toast.error(error.message); return; }
+    void logAudit("update_own_credentials", "auth", null, {
+      changed_email: Boolean(email),
+      changed_password: wantsPassword,
+    });
+    setAccount({ email: "", password: "", confirm: "" });
+    toast.success(
+      email
+        ? "Saved. Confirm the change from the link sent to the new email address."
+        : "Password updated. Use it the next time you sign in.",
+    );
+  }
+
+
 
   if (isLoading) {
     return (
@@ -496,6 +536,7 @@ function AdminConsole() {
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="audit">Audit trail</TabsTrigger>
             {isAdmin ? <TabsTrigger value="roles">Roles</TabsTrigger> : null}
+            <TabsTrigger value="account">My account</TabsTrigger>
           </TabsList>
 
           <TabsContent value="students" className="mt-6">
@@ -990,6 +1031,56 @@ function AdminConsole() {
               </div>
             </TabsContent>
           ) : null}
+
+          <TabsContent value="account" className="mt-6">
+            <form onSubmit={updateAccount} className="panel max-w-xl p-6">
+              <h2 className="text-lg">My sign-in credentials</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Change the email address or password used to sign in to this console. Leave a field
+                blank to keep it unchanged. Forgotten passwords can also be recovered from the
+                sign-in page using the emailed verification code.
+              </p>
+              <div className="mt-5 space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="acct-email">New email address</Label>
+                  <Input
+                    id="acct-email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="leave blank to keep current"
+                    value={account.email}
+                    onChange={(e) => setAccount((a) => ({ ...a, email: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="acct-password">New password</Label>
+                  <Input
+                    id="acct-password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={account.password}
+                    onChange={(e) => setAccount((a) => ({ ...a, password: e.target.value }))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    At least 8 characters, including a letter and a number.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="acct-confirm">Confirm new password</Label>
+                  <Input
+                    id="acct-confirm"
+                    type="password"
+                    autoComplete="new-password"
+                    value={account.confirm}
+                    onChange={(e) => setAccount((a) => ({ ...a, confirm: e.target.value }))}
+                  />
+                </div>
+                <Button type="submit" disabled={savingAccount}>
+                  Save credentials
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
         </Tabs>
       </main>
     </div>
