@@ -259,13 +259,84 @@ function Dashboard() {
     toast.success("Your prediction history has been downloaded.");
   }
 
-  async function submitActual(e: React.FormEvent) {
-    e.preventDefault();
-    const v = toNumber(actual);
-    if (v === null || v < 0 || v > 4) {
-      toast.error("Enter your actual CGPA between 0.00 and 4.00");
+  function exportJson() {
+    const rows = history.data ?? [];
+    if (rows.length === 0) {
+      toast.error("You have no saved predictions to export yet.");
       return;
     }
+    downloadJson(`ssps-my-predictions-${stamp()}.json`, {
+      system: "SSPS - UCC Students Success Prediction System",
+      exported_at: new Date().toISOString(),
+      student: {
+        full_name: profile.data?.full_name ?? null,
+        student_id: profile.data?.student_id ?? null,
+        programme: profile.data?.programme ?? null,
+      },
+      model: { version: MODEL_VERSION, metrics: MODEL_METRICS },
+      predictions: rows,
+    });
+    void logAudit("export_json", "prediction", null, { rows: rows.length });
+    toast.success("JSON export downloaded.");
+  }
+
+  function exportPdf() {
+    const rows = history.data ?? [];
+    if (rows.length === 0) {
+      toast.error("You have no saved predictions to export yet.");
+      return;
+    }
+    const latest = rows[0]!;
+    const opened = printPredictionReport({
+      title: "SSPS Prediction Report",
+      subtitle: `${profile.data?.full_name ?? "Student"}${
+        profile.data?.student_id ? ` (${profile.data.student_id})` : ""
+      } - University of Cape Coast, College of Distance Education`,
+      summary: [
+        { label: "Latest CGPA forecast", value: Number(latest.predicted_gpa).toFixed(2) },
+        { label: "Classification", value: latest.predicted_class },
+        {
+          label: "Confidence band",
+          value: `${Number(latest.confidence_low).toFixed(2)} - ${Number(latest.confidence_high).toFixed(2)}`,
+        },
+        { label: "Model", value: latest.model_version },
+      ],
+      columns: [
+        { key: "date", label: "Date" },
+        { key: "l1", label: "L100" },
+        { key: "l2", label: "L200" },
+        { key: "l3", label: "L300" },
+        { key: "gpa", label: "Predicted CGPA" },
+        { key: "cls", label: "Classification" },
+        { key: "band", label: "80% band" },
+        { key: "status", label: "Status" },
+      ],
+      rows: rows.map((p) => ({
+        date: new Date(p.created_at).toLocaleDateString(),
+        l1: Number(p.level100_gpa).toFixed(2),
+        l2: Number(p.level200_gpa).toFixed(2),
+        l3: p.level300_gpa === null ? "-" : Number(p.level300_gpa).toFixed(2),
+        gpa: Number(p.predicted_gpa).toFixed(2),
+        cls: p.predicted_class,
+        band: `${Number(p.confidence_low).toFixed(2)} - ${Number(p.confidence_high).toFixed(2)}`,
+        status: p.pass_fail,
+      })),
+    });
+    if (!opened) {
+      toast.error("Allow pop-ups for this site to generate the PDF report.");
+      return;
+    }
+    void logAudit("export_pdf", "prediction", null, { rows: rows.length });
+  }
+
+  async function submitActual(e: React.FormEvent) {
+    e.preventDefault();
+    const check = checkGpa("Actual CGPA", actual, true);
+    if (!check || !check.ok) {
+      toast.error(check ? check.message : "Enter your actual CGPA");
+      return;
+    }
+    const v = check.value;
     const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) return;
