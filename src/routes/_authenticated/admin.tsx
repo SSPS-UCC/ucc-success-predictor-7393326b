@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ShieldCheck,
@@ -11,9 +11,26 @@ import {
   Plus,
   ArrowLeft,
   Lock,
+  Download,
+  ScrollText,
+  Image as ImageIcon,
+  LayoutTemplate,
+  History,
+  BarChart3,
 } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  ComposedChart,
+  ResponsiveContainer,
+  Tooltip as RTooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-import { Crests } from "@/components/Crests";
+import { Crests, BRANDING_KEYS, useBranding } from "@/components/Crests";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,7 +54,10 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { logAudit } from "@/lib/audit";
+import { downloadCsv, stamp } from "@/lib/csv";
 import { useRoles, type AppRole } from "@/hooks/useRoles";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
