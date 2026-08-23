@@ -353,6 +353,20 @@ function Dashboard() {
                   required
                 />
               </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="l3">Level 300 GPA (optional)</Label>
+                <Input
+                  id="l3"
+                  inputMode="decimal"
+                  placeholder="0.00 - 4.00 — leave blank if you are not in Level 300 yet"
+                  value={form.level300_gpa}
+                  onChange={set("level300_gpa")}
+                />
+                <p className="text-xs text-muted-foreground">
+                  If you have already completed Level 300, adding it sharpens the forecast: the
+                  most recent year is weighted into the estimate and the confidence range narrows.
+                </p>
+              </div>
             </div>
 
             <h3 className="mt-7 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
