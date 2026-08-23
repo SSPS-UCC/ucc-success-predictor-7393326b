@@ -30,7 +30,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { Crests, BRANDING_KEYS, useBranding } from "@/components/Crests";
+import { Crests } from "@/components/Crests";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -210,15 +210,10 @@ function AdminConsole() {
     },
   });
 
-  const branding = useBranding();
-
   const [note, setNote] = useState({ title: "", body: "", category: "general" });
   const [template, setTemplate] = useState({ name: "", title: "", body: "", category: "general" });
   const [roleTarget, setRoleTarget] = useState("");
   const [roleValue, setRoleValue] = useState<AppRole>("staff");
-  const [uploading, setUploading] = useState<string | null>(null);
-  const uccInput = useRef<HTMLInputElement>(null);
-  const codeInput = useRef<HTMLInputElement>(null);
 
 
   const stats = useMemo(() => {
@@ -339,53 +334,6 @@ function AdminConsole() {
     void logAudit("delete", "recommendation_template", id, {});
     queryClient.invalidateQueries({ queryKey: ["admin", "templates"] });
   }
-
-  /** Downscale the chosen crest in the browser and store it as an inline PNG. */
-  async function uploadCrest(key: string, file: File) {
-    if (!file.type.startsWith("image/")) { toast.error("Please choose a PNG or JPG image."); return; }
-    setUploading(key);
-    try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(new Error("Could not read the file."));
-        reader.readAsDataURL(file);
-      });
-      const img = new Image();
-      img.src = dataUrl;
-      await img.decode();
-      const maxH = 320;
-      const scale = Math.min(1, maxH / img.height);
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext("2d")?.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const value = canvas.toDataURL("image/png");
-      if (value.length > 900_000) {
-        toast.error("That image is too large. Please use a smaller crest file.");
-        return;
-      }
-      const { data: auth } = await supabase.auth.getUser();
-      const { error } = await supabase
-        .from("branding_settings")
-        .upsert({ key, value, updated_by: auth.user?.id ?? null }, { onConflict: "key" });
-      if (error) { toast.error(error.message); return; }
-      toast.success("Crest updated.");
-      void logAudit("update", "branding", key, {});
-      queryClient.invalidateQueries({ queryKey: ["branding"] });
-    } finally {
-      setUploading(null);
-    }
-  }
-
-  async function resetCrest(key: string) {
-    const { error } = await supabase.from("branding_settings").delete().eq("key", key);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Reverted to the built-in crest.");
-    void logAudit("reset", "branding", key, {});
-    queryClient.invalidateQueries({ queryKey: ["branding"] });
-  }
-
 
   async function addNote(e: React.FormEvent) {
     e.preventDefault();
@@ -548,7 +496,6 @@ function AdminConsole() {
             <TabsTrigger value="notes">Recommendations</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="audit">Audit trail</TabsTrigger>
-            <TabsTrigger value="branding">Branding</TabsTrigger>
             {isAdmin ? <TabsTrigger value="roles">Roles</TabsTrigger> : null}
           </TabsList>
 
@@ -976,60 +923,6 @@ function AdminConsole() {
             </div>
           </TabsContent>
 
-          <TabsContent value="branding" className="mt-6 grid gap-6 lg:grid-cols-2">
-            <div className="panel p-6">
-              <h2 className="flex items-center gap-2 text-lg">
-                <ImageIcon className="h-4 w-4 text-gold" /> Crest uploads
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Replace either crest across the whole system. Transparent PNG works best; images are
-                resized automatically.
-              </p>
-              <div className="mt-5 space-y-5">
-                {[
-                  { key: BRANDING_KEYS.ucc, label: "University of Cape Coast crest", ref: uccInput },
-                  { key: BRANDING_KEYS.code, label: "CoDE crest", ref: codeInput },
-                ].map((c) => (
-                  <div key={c.key} className="rounded-lg border border-border p-4">
-                    <p className="text-sm font-medium">{c.label}</p>
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={uploading === c.key}
-                        onClick={() => c.ref.current?.click()}
-                      >
-                        {uploading === c.key ? "Uploading\u2026" : "Upload new crest"}
-                      </Button>
-                      {branding.data?.[c.key] ? (
-                        <Button variant="ghost" size="sm" onClick={() => resetCrest(c.key)}>
-                          Reset to default
-                        </Button>
-                      ) : null}
-                      <input
-                        ref={c.ref}
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) void uploadCrest(c.key, file);
-                          e.target.value = "";
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="panel p-6">
-              <h2 className="text-lg">Live preview</h2>
-              <div className="mt-5 flex justify-center rounded-xl border border-gold/50 bg-card p-6">
-                <Crests size={72} />
-              </div>
-            </div>
-          </TabsContent>
 
 
 
