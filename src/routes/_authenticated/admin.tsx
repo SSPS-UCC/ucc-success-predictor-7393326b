@@ -243,6 +243,150 @@ function AdminConsole() {
     return m;
   }, [predictions.data]);
 
+  /** Predictions per day plus the running average predicted CGPA for that day. */
+  const analytics = useMemo(() => {
+    const byDay = new Map<string, { count: number; sum: number }>();
+    for (const p of predictions.data ?? []) {
+      const day = new Date(p.created_at).toISOString().slice(0, 10);
+      const cur = byDay.get(day) ?? { count: 0, sum: 0 };
+      cur.count += 1;
+      cur.sum += Number(p.predicted_gpa);
+      byDay.set(day, cur);
+    }
+    return [...byDay.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(-30)
+      .map(([day, v]) => ({
+        day: new Date(day).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+        predictions: v.count,
+        avgGpa: Number((v.sum / v.count).toFixed(2)),
+      }));
+  }, [predictions.data]);
+
+  function exportPredictions() {
+    const rows = predictions.data ?? [];
+    if (rows.length === 0) { toast.error("No predictions to export yet."); return; }
+    downloadCsv(
+      `ssps-predictions-${stamp()}.csv`,
+      rows.map((p) => ({
+        date: new Date(p.created_at).toISOString(),
+        student: nameOf(p.user_id),
+        predicted_gpa: Number(p.predicted_gpa).toFixed(2),
+        predicted_class: p.predicted_class,
+        pass_fail: p.pass_fail,
+      })),
+    );
+    void logAudit("export_csv", "predictions", null, { rows: rows.length });
+  }
+
+  function exportStudents() {
+    const rows = students.data ?? [];
+    if (rows.length === 0) { toast.error("No students to export yet."); return; }
+    downloadCsv(
+      `ssps-students-${stamp()}.csv`,
+      rows.map((s) => ({
+        full_name: s.full_name ?? "",
+        student_id: s.student_id ?? "",
+        programme: s.programme ?? "",
+        study_centre: s.study_centre ?? "",
+        predictions: predictionCountByUser.get(s.id) ?? 0,
+        registered: new Date(s.created_at).toISOString(),
+      })),
+    );
+    void logAudit("export_csv", "profiles", null, { rows: rows.length });
+  }
+
+  function exportAudit() {
+    const rows = auditLogs.data ?? [];
+    if (rows.length === 0) { toast.error("The audit trail is empty."); return; }
+    downloadCsv(
+      `ssps-audit-trail-${stamp()}.csv`,
+      rows.map((a) => ({
+        timestamp: new Date(a.created_at).toISOString(),
+        actor: a.actor_label ?? a.actor_id ?? "",
+        action: a.action,
+        entity: a.entity,
+        entity_id: a.entity_id ?? "",
+        detail: JSON.stringify(a.detail ?? {}),
+      })),
+    );
+  }
+
+  async function addTemplate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!template.name.trim() || !template.title.trim() || !template.body.trim()) {
+      toast.error("A template needs a name, a title and a body.");
+      return;
+    }
+    const { data: auth } = await supabase.auth.getUser();
+    const { error } = await supabase.from("recommendation_templates").insert({
+      name: template.name.trim(),
+      title: template.title.trim(),
+      body: template.body.trim(),
+      category: template.category,
+      created_by: auth.user?.id ?? null,
+    });
+    if (error) { toast.error(error.message); return; }
+    setTemplate({ name: "", title: "", body: "", category: "general" });
+    toast.success("Template saved.");
+    void logAudit("create", "recommendation_template", null, { name: template.name });
+    queryClient.invalidateQueries({ queryKey: ["admin", "templates"] });
+  }
+
+  async function deleteTemplate(id: string) {
+    const { error } = await supabase.from("recommendation_templates").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    void logAudit("delete", "recommendation_template", id, {});
+    queryClient.invalidateQueries({ queryKey: ["admin", "templates"] });
+  }
+
+  /** Downscale the chosen crest in the browser and store it as an inline PNG. */
+  async function uploadCrest(key: string, file: File) {
+    if (!file.type.startsWith("image/")) { toast.error("Please choose a PNG or JPG image."); return; }
+    setUploading(key);
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Could not read the file."));
+        reader.readAsDataURL(file);
+      });
+      const img = new Image();
+      img.src = dataUrl;
+      await img.decode();
+      const maxH = 320;
+      const scale = Math.min(1, maxH / img.height);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d")?.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const value = canvas.toDataURL("image/png");
+      if (value.length > 900_000) {
+        toast.error("That image is too large. Please use a smaller crest file.");
+        return;
+      }
+      const { data: auth } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from("branding_settings")
+        .upsert({ key, value, updated_by: auth.user?.id ?? null }, { onConflict: "key" });
+      if (error) { toast.error(error.message); return; }
+      toast.success("Crest updated.");
+      void logAudit("update", "branding", key, {});
+      queryClient.invalidateQueries({ queryKey: ["branding"] });
+    } finally {
+      setUploading(null);
+    }
+  }
+
+  async function resetCrest(key: string) {
+    const { error } = await supabase.from("branding_settings").delete().eq("key", key);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Reverted to the built-in crest.");
+    void logAudit("reset", "branding", key, {});
+    queryClient.invalidateQueries({ queryKey: ["branding"] });
+  }
+
+
   async function addNote(e: React.FormEvent) {
     e.preventDefault();
     if (!note.title.trim() || !note.body.trim()) {
