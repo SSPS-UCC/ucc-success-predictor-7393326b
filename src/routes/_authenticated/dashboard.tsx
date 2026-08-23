@@ -593,9 +593,17 @@ function Dashboard() {
               <h2 className="flex items-center gap-2 text-lg">
                 <History className="h-4 w-4 text-accent" /> Prediction history
               </h2>
-              <Button variant="outline" size="sm" onClick={exportHistory}>
-                <Download className="mr-2 h-3.5 w-3.5" /> Export CSV
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={exportHistory}>
+                  <Download className="mr-2 h-3.5 w-3.5" /> CSV
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportJson}>
+                  <Download className="mr-2 h-3.5 w-3.5" /> JSON
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportPdf}>
+                  <Download className="mr-2 h-3.5 w-3.5" /> PDF report
+                </Button>
+              </div>
             </div>
 
             {chartData.length > 1 ? (
