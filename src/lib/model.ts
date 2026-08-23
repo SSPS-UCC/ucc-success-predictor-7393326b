@@ -149,6 +149,23 @@ export function predict(inputs: Inputs): PredictionResult {
     });
   });
 
+  const l3 = inputs.level300_gpa;
+  const hasL3 = l3 !== undefined && l3 !== null && !Number.isNaN(Number(l3));
+  let sigma = MODEL_METRICS.sigma;
+
+  if (hasL3) {
+    const before = gpa;
+    // Recency correction: pull the estimate toward the most recent year on record.
+    gpa = (1 - LEVEL300_WEIGHT) * gpa + LEVEL300_WEIGHT * Number(l3);
+    sigma = MODEL_METRICS.sigma * LEVEL300_SIGMA_FACTOR;
+    drivers.push({
+      key: "level300_gpa",
+      label: "Level 300 GPA",
+      contribution: gpa - before,
+      provided: true,
+    });
+  }
+
   gpa = clamp(gpa, 0, 4);
   drivers.sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
 
@@ -157,8 +174,8 @@ export function predict(inputs: Inputs): PredictionResult {
     classification: classify(gpa),
     passFail: gpa >= 1 ? "Pass" : "Fail",
     // ~80% prediction interval from the held-out residual sigma
-    low: clamp(gpa - 1.282 * MODEL_METRICS.sigma, 0, 4),
-    high: clamp(gpa + 1.282 * MODEL_METRICS.sigma, 0, 4),
+    low: clamp(gpa - 1.282 * sigma, 0, 4),
+    high: clamp(gpa + 1.282 * sigma, 0, 4),
     drivers,
   };
 }
