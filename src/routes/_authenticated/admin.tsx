@@ -496,11 +496,19 @@ function AdminConsole() {
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/dashboard">
-              <ArrowLeft className="mr-2 h-3.5 w-3.5" /> My dashboard
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/model-evaluation">
+                <BarChart3 className="mr-2 h-3.5 w-3.5" /> Model evaluation
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/dashboard">
+                <ArrowLeft className="mr-2 h-3.5 w-3.5" /> My dashboard
+              </Link>
+            </Button>
+          </div>
+
         </div>
       </header>
 
