@@ -66,3 +66,4 @@ Bachelor of Science in Information Technology
 University of Cape Coast
 
 2026
+Updated deployment
