@@ -42,6 +42,8 @@ import {
 import { buildRecommendations } from "@/lib/recommendations";
 import { logAudit } from "@/lib/audit";
 import { downloadCsv, stamp } from "@/lib/csv";
+import { downloadJson, printPredictionReport } from "@/lib/export";
+import { checkGpa, gpaConsistencyWarning } from "@/lib/validation";
 import { useRoles } from "@/hooks/useRoles";
 
 
@@ -162,17 +164,20 @@ function Dashboard() {
 
   async function handlePredict(e: React.FormEvent) {
     e.preventDefault();
-    const l1 = toNumber(form.level100_gpa);
-    const l2 = toNumber(form.level200_gpa);
-    if (l1 === null || l2 === null || l1 < 0 || l1 > 4 || l2 < 0 || l2 > 4) {
-      toast.error("Level 100 and Level 200 GPA are required and must be between 0.00 and 4.00");
-      return;
+    const c1 = checkGpa("Level 100 GPA", form.level100_gpa, true);
+    const c2 = checkGpa("Level 200 GPA", form.level200_gpa, true);
+    const c3 = checkGpa("Level 300 GPA", form.level300_gpa, false);
+    for (const c of [c1, c2, c3]) {
+      if (c && !c.ok) {
+        toast.error(c.message);
+        return;
+      }
     }
-    const l3 = toNumber(form.level300_gpa);
-    if (l3 !== null && (l3 < 0 || l3 > 4)) {
-      toast.error("Level 300 GPA must be between 0.00 and 4.00");
-      return;
-    }
+    const l1 = (c1 as { ok: true; value: number }).value;
+    const l2 = (c2 as { ok: true; value: number }).value;
+    const l3 = c3 && c3.ok ? c3.value : null;
+    const warning = gpaConsistencyWarning(l1, l2, l3);
+    if (warning) toast.warning(warning);
     const optional: Record<string, number> = {};
     for (const f of OPTIONAL_FIELDS) {
       const v = toNumber(form[f.key]);
