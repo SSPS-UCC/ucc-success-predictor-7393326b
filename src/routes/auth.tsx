@@ -305,9 +305,20 @@ function AuthPage() {
                 )}
               </div>
             )}
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              disabled={loading || (forgot && cooldown > 0)}
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {forgot ? "Send recovery code" : tab === "signup" ? "Create account" : "Sign in"}
+              {forgot
+                ? cooldown > 0
+                  ? `Resend in ${cooldown}s`
+                  : "Send recovery code"
+                : tab === "signup"
+                  ? "Create account"
+                  : "Sign in"}
             </Button>
             {forgot && (
               <div className="space-y-2 text-center">
