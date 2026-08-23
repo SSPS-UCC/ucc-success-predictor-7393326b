@@ -397,6 +397,44 @@ function AdminConsole() {
     queryClient.invalidateQueries({ queryKey: ["admin", "roles"] });
   }
 
+  async function updateAccount(e: React.FormEvent) {
+    e.preventDefault();
+    const email = account.email.trim().toLowerCase();
+    const wantsPassword = account.password.length > 0;
+    if (!email && !wantsPassword) {
+      toast.error("Enter a new email address or a new password.");
+      return;
+    }
+    if (wantsPassword) {
+      if (account.password.length < 8 || !/[A-Za-z]/.test(account.password) || !/[0-9]/.test(account.password)) {
+        toast.error("Password must be at least 8 characters and include a letter and a number.");
+        return;
+      }
+      if (account.password !== account.confirm) {
+        toast.error("The two passwords do not match.");
+        return;
+      }
+    }
+    setSavingAccount(true);
+    const payload: { email?: string; password?: string } = {};
+    if (email) payload.email = email;
+    if (wantsPassword) payload.password = account.password;
+    const { error } = await supabase.auth.updateUser(payload);
+    setSavingAccount(false);
+    if (error) { toast.error(error.message); return; }
+    void logAudit("update_own_credentials", "auth", null, {
+      changed_email: Boolean(email),
+      changed_password: wantsPassword,
+    });
+    setAccount({ email: "", password: "", confirm: "" });
+    toast.success(
+      email
+        ? "Saved. Confirm the change from the link sent to the new email address."
+        : "Password updated. Use it the next time you sign in.",
+    );
+  }
+
+
 
   if (isLoading) {
     return (
