@@ -5,6 +5,8 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 
 import { Crests } from "@/components/Crests";
+import { PasswordStrength } from "@/components/PasswordStrength";
+import { passwordSchema } from "@/lib/password";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,12 +43,7 @@ const signUpSchema = z.object({
     .trim()
     .regex(/^[0-9+\s-]{9,20}$/, "Enter a valid telephone number"),
   studentId: z.string().trim().max(30).optional().or(z.literal("")),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(72)
-    .regex(/[A-Za-z]/, "Password must contain a letter")
-    .regex(/[0-9]/, "Password must contain a number"),
+  password: passwordSchema,
 });
 
 const RECOVERY_THROTTLE_KEY = "ssps.recovery.lastRequest";
@@ -298,11 +295,7 @@ function AuthPage() {
                   onChange={set("password")}
                   required
                 />
-                {tab === "signup" && (
-                  <p className="text-xs text-muted-foreground">
-                    At least 8 characters, including a letter and a number.
-                  </p>
-                )}
+                {tab === "signup" && <PasswordStrength value={form.password} className="pt-1" />}
               </div>
             )}
             <Button
