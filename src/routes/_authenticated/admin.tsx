@@ -542,12 +542,16 @@ function AdminConsole() {
         </div>
 
         <Tabs defaultValue="students" className="mt-10">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="students">Students</TabsTrigger>
             <TabsTrigger value="results">Aggregated results</TabsTrigger>
             <TabsTrigger value="notes">Recommendations</TabsTrigger>
+            <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="audit">Audit trail</TabsTrigger>
+            <TabsTrigger value="branding">Branding</TabsTrigger>
             {isAdmin ? <TabsTrigger value="roles">Roles</TabsTrigger> : null}
           </TabsList>
+
 
           <TabsContent value="students" className="mt-6">
             <div className="panel overflow-x-auto p-2">
