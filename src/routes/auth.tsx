@@ -49,12 +49,16 @@ const signUpSchema = z.object({
     .regex(/[0-9]/, "Password must contain a number"),
 });
 
+const RECOVERY_THROTTLE_KEY = "ssps.recovery.lastRequest";
+const RECOVERY_COOLDOWN_MS = 60_000;
+
 function AuthPage() {
   const { mode } = Route.useSearch();
   const navigate = useNavigate();
   const [tab, setTab] = useState<"signin" | "signup">(mode ?? "signup");
   const [loading, setLoading] = useState(false);
   const [forgot, setForgot] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
