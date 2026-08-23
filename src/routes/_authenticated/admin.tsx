@@ -169,9 +169,57 @@ function AdminConsole() {
     },
   });
 
+  const auditLogs = useQuery({
+    queryKey: ["admin", "audit"],
+    enabled: isStaff,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("audit_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(300);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const templates = useQuery({
+    queryKey: ["admin", "templates"],
+    enabled: isStaff,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("recommendation_templates")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const noteVersions = useQuery({
+    queryKey: ["admin", "note-versions"],
+    enabled: isStaff,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("recommendation_note_versions")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const branding = useBranding();
+
   const [note, setNote] = useState({ title: "", body: "", category: "general" });
+  const [template, setTemplate] = useState({ name: "", title: "", body: "", category: "general" });
   const [roleTarget, setRoleTarget] = useState("");
   const [roleValue, setRoleValue] = useState<AppRole>("staff");
+  const [uploading, setUploading] = useState<string | null>(null);
+  const uccInput = useRef<HTMLInputElement>(null);
+  const codeInput = useRef<HTMLInputElement>(null);
+
 
   const stats = useMemo(() => {
     const preds = predictions.data ?? [];
