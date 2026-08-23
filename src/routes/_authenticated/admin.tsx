@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   ShieldCheck,
@@ -13,7 +13,6 @@ import {
   Lock,
   Download,
   ScrollText,
-  Image as ImageIcon,
   LayoutTemplate,
   History,
   BarChart3,
