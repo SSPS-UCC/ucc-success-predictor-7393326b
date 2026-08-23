@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GraduationCap, ShieldCheck, LineChart, ArrowRight, Target } from "lucide-react";
 
-import heroImage from "@/assets/ucc-graduation.jpg.asset.json";
+import heroImage from "@/assets/ucc-graduation.jpg";
 import { Crests } from "@/components/Crests";
 import { Button } from "@/components/ui/button";
 import { MODEL_METRICS, CLASS_BANDS } from "@/lib/model";
@@ -53,7 +53,7 @@ function Landing() {
 
       <section className="relative isolate overflow-hidden">
         <img
-          src={heroImage.url}
+          src={heroImage}
           alt="University of Cape Coast graduates celebrating in gowns and mortarboard caps"
           width={1440}
           height={960}
