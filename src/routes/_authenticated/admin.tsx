@@ -536,6 +536,7 @@ function AdminConsole() {
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="audit">Audit trail</TabsTrigger>
             {isAdmin ? <TabsTrigger value="roles">Roles</TabsTrigger> : null}
+            <TabsTrigger value="account">My account</TabsTrigger>
           </TabsList>
 
           <TabsContent value="students" className="mt-6">
