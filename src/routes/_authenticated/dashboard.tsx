@@ -203,6 +203,7 @@ function Dashboard() {
         user_id: uid,
         level100_gpa: l1,
         level200_gpa: l2,
+        level300_gpa: l3,
         ...optional,
 
         predicted_gpa: Number(r.gpa.toFixed(4)),
