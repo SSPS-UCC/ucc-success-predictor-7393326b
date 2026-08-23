@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { logAudit } from "@/lib/audit";
+
+const MAX_ATTEMPTS = 5;
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -39,6 +42,7 @@ function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
     // A recovery link signs the user in with a temporary recovery session.
