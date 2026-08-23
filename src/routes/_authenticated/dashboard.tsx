@@ -42,6 +42,8 @@ import {
 import { buildRecommendations } from "@/lib/recommendations";
 import { logAudit } from "@/lib/audit";
 import { downloadCsv, stamp } from "@/lib/csv";
+import { downloadJson, printPredictionReport } from "@/lib/export";
+import { checkGpa, gpaConsistencyWarning } from "@/lib/validation";
 import { useRoles } from "@/hooks/useRoles";
 
 
@@ -162,17 +164,20 @@ function Dashboard() {
 
   async function handlePredict(e: React.FormEvent) {
     e.preventDefault();
-    const l1 = toNumber(form.level100_gpa);
-    const l2 = toNumber(form.level200_gpa);
-    if (l1 === null || l2 === null || l1 < 0 || l1 > 4 || l2 < 0 || l2 > 4) {
-      toast.error("Level 100 and Level 200 GPA are required and must be between 0.00 and 4.00");
-      return;
+    const c1 = checkGpa("Level 100 GPA", form.level100_gpa, true);
+    const c2 = checkGpa("Level 200 GPA", form.level200_gpa, true);
+    const c3 = checkGpa("Level 300 GPA", form.level300_gpa, false);
+    for (const c of [c1, c2, c3]) {
+      if (c && !c.ok) {
+        toast.error(c.message);
+        return;
+      }
     }
-    const l3 = toNumber(form.level300_gpa);
-    if (l3 !== null && (l3 < 0 || l3 > 4)) {
-      toast.error("Level 300 GPA must be between 0.00 and 4.00");
-      return;
-    }
+    const l1 = (c1 as { ok: true; value: number }).value;
+    const l2 = (c2 as { ok: true; value: number }).value;
+    const l3 = c3 && c3.ok ? c3.value : null;
+    const warning = gpaConsistencyWarning(l1, l2, l3);
+    if (warning) toast.warning(warning);
     const optional: Record<string, number> = {};
     for (const f of OPTIONAL_FIELDS) {
       const v = toNumber(form[f.key]);
@@ -254,13 +259,84 @@ function Dashboard() {
     toast.success("Your prediction history has been downloaded.");
   }
 
-  async function submitActual(e: React.FormEvent) {
-    e.preventDefault();
-    const v = toNumber(actual);
-    if (v === null || v < 0 || v > 4) {
-      toast.error("Enter your actual CGPA between 0.00 and 4.00");
+  function exportJson() {
+    const rows = history.data ?? [];
+    if (rows.length === 0) {
+      toast.error("You have no saved predictions to export yet.");
       return;
     }
+    downloadJson(`ssps-my-predictions-${stamp()}.json`, {
+      system: "SSPS - UCC Students Success Prediction System",
+      exported_at: new Date().toISOString(),
+      student: {
+        full_name: profile.data?.full_name ?? null,
+        student_id: profile.data?.student_id ?? null,
+        programme: profile.data?.programme ?? null,
+      },
+      model: { version: MODEL_VERSION, metrics: MODEL_METRICS },
+      predictions: rows,
+    });
+    void logAudit("export_json", "prediction", null, { rows: rows.length });
+    toast.success("JSON export downloaded.");
+  }
+
+  function exportPdf() {
+    const rows = history.data ?? [];
+    if (rows.length === 0) {
+      toast.error("You have no saved predictions to export yet.");
+      return;
+    }
+    const latest = rows[0]!;
+    const opened = printPredictionReport({
+      title: "SSPS Prediction Report",
+      subtitle: `${profile.data?.full_name ?? "Student"}${
+        profile.data?.student_id ? ` (${profile.data.student_id})` : ""
+      } - University of Cape Coast, College of Distance Education`,
+      summary: [
+        { label: "Latest CGPA forecast", value: Number(latest.predicted_gpa).toFixed(2) },
+        { label: "Classification", value: latest.predicted_class },
+        {
+          label: "Confidence band",
+          value: `${Number(latest.confidence_low).toFixed(2)} - ${Number(latest.confidence_high).toFixed(2)}`,
+        },
+        { label: "Model", value: latest.model_version },
+      ],
+      columns: [
+        { key: "date", label: "Date" },
+        { key: "l1", label: "L100" },
+        { key: "l2", label: "L200" },
+        { key: "l3", label: "L300" },
+        { key: "gpa", label: "Predicted CGPA" },
+        { key: "cls", label: "Classification" },
+        { key: "band", label: "80% band" },
+        { key: "status", label: "Status" },
+      ],
+      rows: rows.map((p) => ({
+        date: new Date(p.created_at).toLocaleDateString(),
+        l1: Number(p.level100_gpa).toFixed(2),
+        l2: Number(p.level200_gpa).toFixed(2),
+        l3: p.level300_gpa === null ? "-" : Number(p.level300_gpa).toFixed(2),
+        gpa: Number(p.predicted_gpa).toFixed(2),
+        cls: p.predicted_class,
+        band: `${Number(p.confidence_low).toFixed(2)} - ${Number(p.confidence_high).toFixed(2)}`,
+        status: p.pass_fail,
+      })),
+    });
+    if (!opened) {
+      toast.error("Allow pop-ups for this site to generate the PDF report.");
+      return;
+    }
+    void logAudit("export_pdf", "prediction", null, { rows: rows.length });
+  }
+
+  async function submitActual(e: React.FormEvent) {
+    e.preventDefault();
+    const check = checkGpa("Actual CGPA", actual, true);
+    if (!check || !check.ok) {
+      toast.error(check ? check.message : "Enter your actual CGPA");
+      return;
+    }
+    const v = check.value;
     const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) return;
@@ -517,9 +593,17 @@ function Dashboard() {
               <h2 className="flex items-center gap-2 text-lg">
                 <History className="h-4 w-4 text-accent" /> Prediction history
               </h2>
-              <Button variant="outline" size="sm" onClick={exportHistory}>
-                <Download className="mr-2 h-3.5 w-3.5" /> Export CSV
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={exportHistory}>
+                  <Download className="mr-2 h-3.5 w-3.5" /> CSV
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportJson}>
+                  <Download className="mr-2 h-3.5 w-3.5" /> JSON
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportPdf}>
+                  <Download className="mr-2 h-3.5 w-3.5" /> PDF report
+                </Button>
+              </div>
             </div>
 
             {chartData.length > 1 ? (

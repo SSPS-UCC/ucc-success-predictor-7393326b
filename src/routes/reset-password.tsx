@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { logAudit } from "@/lib/audit";
+
+const MAX_ATTEMPTS = 5;
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -39,6 +42,7 @@ function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
     // A recovery link signs the user in with a temporary recovery session.
@@ -50,18 +54,31 @@ function ResetPasswordPage() {
 
   async function verifyCode(e: React.FormEvent) {
     e.preventDefault();
+    if (attempts >= MAX_ATTEMPTS) {
+      toast.error("Too many attempts. Request a fresh recovery code.");
+      return;
+    }
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCode = code.replace(/\D/g, "");
+    if (cleanCode.length !== 6) {
+      toast.error("Enter the 6-digit verification code exactly as emailed.");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token: code.trim(),
+      email: cleanEmail,
+      token: cleanCode,
       type: "recovery",
     });
     setLoading(false);
     if (error) {
+      setAttempts((a) => a + 1);
       toast.error("That code is invalid or has expired. Request a new one.");
       return;
     }
+    setAttempts(0);
     setHasSession(true);
+    void logAudit("password_recovery_verified", "auth", null, { method: "email_otp" });
     toast.success("Verified — now choose a new password.");
   }
 
@@ -82,6 +99,7 @@ function ResetPasswordPage() {
       toast.error(error.message);
       return;
     }
+    await logAudit("password_recovery_completed", "auth", null, { method: "self_service_reset" });
     toast.success("Password updated. Please sign in with your new password.");
     await supabase.auth.signOut();
     navigate({ to: "/auth", search: { mode: "signin" }, replace: true });
