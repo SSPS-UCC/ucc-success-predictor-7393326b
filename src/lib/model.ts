@@ -111,7 +111,12 @@ export type PredictionResult = {
   low: number;
   high: number;
   /** Per-feature contribution to the prediction, biggest lever first. */
-  drivers: { key: FeatureKey; label: string; contribution: number; provided: boolean }[];
+  drivers: {
+    key: FeatureKey | "level300_gpa";
+    label: string;
+    contribution: number;
+    provided: boolean;
+  }[];
 };
 
 export const FEATURE_LABELS: Record<FeatureKey, string> = {
