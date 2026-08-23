@@ -40,7 +40,10 @@ import {
   type FeatureKey,
 } from "@/lib/model";
 import { buildRecommendations } from "@/lib/recommendations";
+import { logAudit } from "@/lib/audit";
+import { downloadCsv, stamp } from "@/lib/csv";
 import { useRoles } from "@/hooks/useRoles";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
