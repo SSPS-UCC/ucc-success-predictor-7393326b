@@ -99,6 +99,7 @@ function ResetPasswordPage() {
       toast.error(error.message);
       return;
     }
+    await logAudit("password_recovery_completed", "auth", null, { method: "self_service_reset" });
     toast.success("Password updated. Please sign in with your new password.");
     await supabase.auth.signOut();
     navigate({ to: "/auth", search: { mode: "signin" }, replace: true });
