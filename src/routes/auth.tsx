@@ -199,19 +199,25 @@ function AuthPage() {
           </div>
 
           <h2 className="text-2xl">
-            {tab === "signup" ? "Create your student account" : "Welcome back"}
+            {forgot
+              ? "Recover your account"
+              : tab === "signup"
+                ? "Create your student account"
+                : "Welcome back"}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {tab === "signup"
-              ? "Register with your email and telephone number, or continue with Google."
-              : "Sign in to run a new prediction and view your history."}
+            {forgot
+              ? "Enter your registered email address. We'll send you a recovery link and a verification code so you can create a new password."
+              : tab === "signup"
+                ? "Register with your email and telephone number, or continue with Google."
+                : "Sign in to run a new prediction and view your history."}
           </p>
 
           <form
-            onSubmit={tab === "signup" ? handleSignUp : handleSignIn}
+            onSubmit={forgot ? handleForgotPassword : tab === "signup" ? handleSignUp : handleSignIn}
             className="mt-6 space-y-4"
           >
-            {tab === "signup" && (
+            {!forgot && tab === "signup" && (
               <>
                 <div className="space-y-1.5">
                   <Label htmlFor="fullName">Full name</Label>
