@@ -157,7 +157,7 @@ function Dashboard() {
     [history.data],
   );
 
-  const set = (k: FeatureKey) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   async function handlePredict(e: React.FormEvent) {
