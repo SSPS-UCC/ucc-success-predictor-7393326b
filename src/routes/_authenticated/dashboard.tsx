@@ -66,11 +66,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-type FormState = Record<FeatureKey, string>;
+type FormState = Record<FeatureKey | "level300_gpa", string>;
 
 const EMPTY: FormState = {
   level100_gpa: "",
   level200_gpa: "",
+  level300_gpa: "",
   course_credits: "",
   attendance_pct: "",
   study_hours_per_week: "",
@@ -156,7 +157,7 @@ function Dashboard() {
     [history.data],
   );
 
-  const set = (k: FeatureKey) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   async function handlePredict(e: React.FormEvent) {
@@ -165,6 +166,11 @@ function Dashboard() {
     const l2 = toNumber(form.level200_gpa);
     if (l1 === null || l2 === null || l1 < 0 || l1 > 4 || l2 < 0 || l2 > 4) {
       toast.error("Level 100 and Level 200 GPA are required and must be between 0.00 and 4.00");
+      return;
+    }
+    const l3 = toNumber(form.level300_gpa);
+    if (l3 !== null && (l3 < 0 || l3 > 4)) {
+      toast.error("Level 300 GPA must be between 0.00 and 4.00");
       return;
     }
     const optional: Record<string, number> = {};
@@ -178,7 +184,12 @@ function Dashboard() {
         optional[f.key] = v;
       }
     }
-    const inputs = { level100_gpa: l1, level200_gpa: l2, ...optional } as Inputs;
+    const inputs = {
+      level100_gpa: l1,
+      level200_gpa: l2,
+      ...(l3 !== null ? { level300_gpa: l3 } : {}),
+      ...optional,
+    } as Inputs;
 
     const r = predict(inputs);
     setResult(r);
@@ -192,6 +203,7 @@ function Dashboard() {
         user_id: uid,
         level100_gpa: l1,
         level200_gpa: l2,
+        level300_gpa: l3,
         ...optional,
 
         predicted_gpa: Number(r.gpa.toFixed(4)),
@@ -227,6 +239,7 @@ function Dashboard() {
         date: new Date(p.created_at).toISOString(),
         level100_gpa: p.level100_gpa,
         level200_gpa: p.level200_gpa,
+        level300_gpa: p.level300_gpa ?? "",
         attendance_pct: p.attendance_pct ?? "",
         study_hours_per_week: p.study_hours_per_week ?? "",
         predicted_gpa: Number(p.predicted_gpa).toFixed(2),
@@ -339,6 +352,20 @@ function Dashboard() {
                   onChange={set("level200_gpa")}
                   required
                 />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="l3">Level 300 GPA (optional)</Label>
+                <Input
+                  id="l3"
+                  inputMode="decimal"
+                  placeholder="0.00 - 4.00 — leave blank if you are not in Level 300 yet"
+                  value={form.level300_gpa}
+                  onChange={set("level300_gpa")}
+                />
+                <p className="text-xs text-muted-foreground">
+                  If you have already completed Level 300, adding it sharpens the forecast: the
+                  most recent year is weighted into the estimate and the confidence range narrows.
+                </p>
               </div>
             </div>
 

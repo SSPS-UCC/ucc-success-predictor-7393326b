@@ -68,7 +68,22 @@ export const MEANS: Record<FeatureKey, number> = {
 export type Inputs = Partial<Record<FeatureKey, number | null | undefined>> & {
   level100_gpa: number;
   level200_gpa: number;
+  /**
+   * Optional Level 300 GPA. The Ridge model was trained on Level 100/200 records
+   * only, so this is applied as a documented recency correction rather than a
+   * fitted coefficient (see LEVEL300_WEIGHT below).
+   */
+  level300_gpa?: number | null;
 };
+
+/**
+ * Weight given to the Level 300 GPA when a student chooses to supply it.
+ * The correction shifts the Ridge estimate toward the most recent year of
+ * performance, which is the closest proxy for the final year, and the
+ * prediction interval is narrowed because one more year of evidence is known.
+ */
+export const LEVEL300_WEIGHT = 0.35;
+const LEVEL300_SIGMA_FACTOR = 0.82;
 
 /** UCC / KNUST / Legon degree classification bands on the 4.00 CGPA scale. */
 export const CLASS_BANDS = [
@@ -96,7 +111,12 @@ export type PredictionResult = {
   low: number;
   high: number;
   /** Per-feature contribution to the prediction, biggest lever first. */
-  drivers: { key: FeatureKey; label: string; contribution: number; provided: boolean }[];
+  drivers: {
+    key: FeatureKey | "level300_gpa";
+    label: string;
+    contribution: number;
+    provided: boolean;
+  }[];
 };
 
 export const FEATURE_LABELS: Record<FeatureKey, string> = {
@@ -134,6 +154,23 @@ export function predict(inputs: Inputs): PredictionResult {
     });
   });
 
+  const l3 = inputs.level300_gpa;
+  const hasL3 = l3 !== undefined && l3 !== null && !Number.isNaN(Number(l3));
+  let sigma = MODEL_METRICS.sigma;
+
+  if (hasL3) {
+    const before = gpa;
+    // Recency correction: pull the estimate toward the most recent year on record.
+    gpa = (1 - LEVEL300_WEIGHT) * gpa + LEVEL300_WEIGHT * Number(l3);
+    sigma = MODEL_METRICS.sigma * LEVEL300_SIGMA_FACTOR;
+    drivers.push({
+      key: "level300_gpa",
+      label: "Level 300 GPA",
+      contribution: gpa - before,
+      provided: true,
+    });
+  }
+
   gpa = clamp(gpa, 0, 4);
   drivers.sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
 
@@ -142,8 +179,8 @@ export function predict(inputs: Inputs): PredictionResult {
     classification: classify(gpa),
     passFail: gpa >= 1 ? "Pass" : "Fail",
     // ~80% prediction interval from the held-out residual sigma
-    low: clamp(gpa - 1.282 * MODEL_METRICS.sigma, 0, 4),
-    high: clamp(gpa + 1.282 * MODEL_METRICS.sigma, 0, 4),
+    low: clamp(gpa - 1.282 * sigma, 0, 4),
+    high: clamp(gpa + 1.282 * sigma, 0, 4),
     drivers,
   };
 }

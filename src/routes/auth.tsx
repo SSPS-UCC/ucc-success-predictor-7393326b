@@ -54,6 +54,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<"signin" | "signup">(mode ?? "signup");
   const [loading, setLoading] = useState(false);
+  const [forgot, setForgot] = useState(false);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -125,6 +126,26 @@ function AuthPage() {
     navigate({ to: "/dashboard", replace: true });
   }
 
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    const email = form.email.trim();
+    if (!z.string().email().safeParse(email).success) {
+      toast.error("Enter the email address you registered with.");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Recovery instructions sent. Check your inbox for the link or code.");
+    navigate({ to: "/reset-password" });
+  }
+
   async function handleGoogle() {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
@@ -178,19 +199,25 @@ function AuthPage() {
           </div>
 
           <h2 className="text-2xl">
-            {tab === "signup" ? "Create your student account" : "Welcome back"}
+            {forgot
+              ? "Recover your account"
+              : tab === "signup"
+                ? "Create your student account"
+                : "Welcome back"}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {tab === "signup"
-              ? "Register with your email and telephone number, or continue with Google."
-              : "Sign in to run a new prediction and view your history."}
+            {forgot
+              ? "Enter your registered email address. We'll send you a recovery link and a verification code so you can create a new password."
+              : tab === "signup"
+                ? "Register with your email and telephone number, or continue with Google."
+                : "Sign in to run a new prediction and view your history."}
           </p>
 
           <form
-            onSubmit={tab === "signup" ? handleSignUp : handleSignIn}
+            onSubmit={forgot ? handleForgotPassword : tab === "signup" ? handleSignUp : handleSignIn}
             className="mt-6 space-y-4"
           >
-            {tab === "signup" && (
+            {!forgot && tab === "signup" && (
               <>
                 <div className="space-y-1.5">
                   <Label htmlFor="fullName">Full name</Label>
@@ -226,42 +253,78 @@ function AuthPage() {
                 required
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete={tab === "signup" ? "new-password" : "current-password"}
-                value={form.password}
-                onChange={set("password")}
-                required
-              />
-              {tab === "signup" && (
-                <p className="text-xs text-muted-foreground">
-                  At least 8 characters, including a letter and a number.
-                </p>
-              )}
-            </div>
+            {!forgot && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  {tab === "signin" && (
+                    <button
+                      type="button"
+                      onClick={() => setForgot(true)}
+                      className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete={tab === "signup" ? "new-password" : "current-password"}
+                  value={form.password}
+                  onChange={set("password")}
+                  required
+                />
+                {tab === "signup" && (
+                  <p className="text-xs text-muted-foreground">
+                    At least 8 characters, including a letter and a number.
+                  </p>
+                )}
+              </div>
+            )}
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {tab === "signup" ? "Create account" : "Sign in"}
+              {forgot ? "Send recovery code" : tab === "signup" ? "Create account" : "Sign in"}
             </Button>
+            {forgot && (
+              <div className="space-y-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => setForgot(false)}
+                  className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                >
+                  Back to sign in
+                </button>
+                <p className="text-xs text-muted-foreground">
+                  Already have a code?{" "}
+                  <Link to="/reset-password" className="underline underline-offset-4">
+                    Enter it here
+                  </Link>
+                </p>
+              </div>
+            )}
           </form>
 
-          <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
-          </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            size="lg"
-            onClick={handleGoogle}
-            disabled={loading}
-          >
-            Continue with Google
-          </Button>
+          {!forgot && (
+            <>
+              <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
+                <span className="h-px flex-1 bg-border" /> or{" "}
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                size="lg"
+                onClick={handleGoogle}
+                disabled={loading}
+              >
+                Continue with Google
+              </Button>
+            </>
+          )}
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
             <Link to="/" className="underline underline-offset-4">

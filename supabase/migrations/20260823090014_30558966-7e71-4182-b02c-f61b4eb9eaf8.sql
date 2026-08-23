@@ -1,0 +1,2 @@
+ALTER TABLE public.predictions ADD COLUMN IF NOT EXISTS level300_gpa numeric;
+ALTER TABLE public.predictions ADD CONSTRAINT predictions_level300_gpa_range CHECK (level300_gpa IS NULL OR (level300_gpa >= 0 AND level300_gpa <= 4));
