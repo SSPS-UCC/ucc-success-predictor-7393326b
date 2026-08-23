@@ -302,7 +302,11 @@ function AuthPage() {
               type="submit"
               className="w-full"
               size="lg"
-              disabled={loading || (forgot && cooldown > 0)}
+              disabled={
+                loading ||
+                (forgot && cooldown > 0) ||
+                (!forgot && tab === "signup" && !passwordSchema.safeParse(form.password).success)
+              }
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {forgot
