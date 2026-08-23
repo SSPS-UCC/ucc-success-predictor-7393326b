@@ -403,7 +403,9 @@ function AdminConsole() {
     if (error) { toast.error(error.message); return; }
     setNote({ title: "", body: "", category: "general" });
     toast.success("Recommendation published.");
+    void logAudit("create", "recommendation_note", null, { title: note.title });
     queryClient.invalidateQueries({ queryKey: ["admin", "notes"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "note-versions"] });
   }
 
   async function toggleNote(id: string, isActive: boolean) {
@@ -412,8 +414,11 @@ function AdminConsole() {
       .update({ is_active: isActive })
       .eq("id", id);
     if (error) { toast.error(error.message); return; }
+    void logAudit("update", "recommendation_note", id, { is_active: isActive });
     queryClient.invalidateQueries({ queryKey: ["admin", "notes"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "note-versions"] });
   }
+
 
   async function deleteNote(id: string) {
     const { error } = await supabase.from("recommendation_notes").delete().eq("id", id);
