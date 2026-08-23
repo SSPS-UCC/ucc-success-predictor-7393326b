@@ -239,6 +239,7 @@ function Dashboard() {
         date: new Date(p.created_at).toISOString(),
         level100_gpa: p.level100_gpa,
         level200_gpa: p.level200_gpa,
+        level300_gpa: p.level300_gpa ?? "",
         attendance_pct: p.attendance_pct ?? "",
         study_hours_per_week: p.study_hours_per_week ?? "",
         predicted_gpa: Number(p.predicted_gpa).toFixed(2),
