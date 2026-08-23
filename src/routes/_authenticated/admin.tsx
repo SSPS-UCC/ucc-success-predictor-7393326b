@@ -1031,6 +1031,56 @@ function AdminConsole() {
               </div>
             </TabsContent>
           ) : null}
+
+          <TabsContent value="account" className="mt-6">
+            <form onSubmit={updateAccount} className="panel max-w-xl p-6">
+              <h2 className="text-lg">My sign-in credentials</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Change the email address or password used to sign in to this console. Leave a field
+                blank to keep it unchanged. Forgotten passwords can also be recovered from the
+                sign-in page using the emailed verification code.
+              </p>
+              <div className="mt-5 space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="acct-email">New email address</Label>
+                  <Input
+                    id="acct-email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="leave blank to keep current"
+                    value={account.email}
+                    onChange={(e) => setAccount((a) => ({ ...a, email: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="acct-password">New password</Label>
+                  <Input
+                    id="acct-password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={account.password}
+                    onChange={(e) => setAccount((a) => ({ ...a, password: e.target.value }))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    At least 8 characters, including a letter and a number.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="acct-confirm">Confirm new password</Label>
+                  <Input
+                    id="acct-confirm"
+                    type="password"
+                    autoComplete="new-password"
+                    value={account.confirm}
+                    onChange={(e) => setAccount((a) => ({ ...a, confirm: e.target.value }))}
+                  />
+                </div>
+                <Button type="submit" disabled={savingAccount}>
+                  Save credentials
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
         </Tabs>
       </main>
     </div>
