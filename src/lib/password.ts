@@ -3,7 +3,7 @@ import { z } from "zod";
 /** Shared password policy for SSPS accounts (sign-up, reset, admin change). */
 export const passwordSchema = z
   .string()
-  .min(10, "Password must be at least 10 characters")
+  .min(8, "Password must be at least 8 characters")
   .max(72, "Password must be 72 characters or fewer")
   .regex(/[a-z]/, "Include at least one lowercase letter")
   .regex(/[A-Z]/, "Include at least one uppercase letter")
@@ -31,7 +31,7 @@ export type PasswordRule = { label: string; passed: boolean };
 
 export function passwordRules(value: string): PasswordRule[] {
   return [
-    { label: "At least 10 characters", passed: value.length >= 10 },
+    { label: "At least 8 characters", passed: value.length >= 8 },
     { label: "Upper and lowercase letters", passed: /[a-z]/.test(value) && /[A-Z]/.test(value) },
     { label: "At least one number", passed: /[0-9]/.test(value) },
     { label: "At least one symbol", passed: /[^A-Za-z0-9]/.test(value) },
