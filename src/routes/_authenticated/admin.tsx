@@ -424,6 +424,7 @@ function AdminConsole() {
     const { error } = await supabase.from("recommendation_notes").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Recommendation removed.");
+    void logAudit("delete", "recommendation_note", id, {});
     queryClient.invalidateQueries({ queryKey: ["admin", "notes"] });
   }
 
@@ -435,6 +436,7 @@ function AdminConsole() {
       .insert({ user_id: roleTarget, role: roleValue });
     if (error) { toast.error(error.message); return; }
     toast.success("Role granted.");
+    void logAudit("grant_role", "user_role", roleTarget, { role: roleValue });
     queryClient.invalidateQueries({ queryKey: ["admin", "roles"] });
   }
 
@@ -442,8 +444,10 @@ function AdminConsole() {
     const { error } = await supabase.from("user_roles").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Role revoked.");
+    void logAudit("revoke_role", "user_role", id, {});
     queryClient.invalidateQueries({ queryKey: ["admin", "roles"] });
   }
+
 
   if (isLoading) {
     return (
