@@ -66,11 +66,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-type FormState = Record<FeatureKey, string>;
+type FormState = Record<FeatureKey | "level300_gpa", string>;
 
 const EMPTY: FormState = {
   level100_gpa: "",
   level200_gpa: "",
+  level300_gpa: "",
   course_credits: "",
   attendance_pct: "",
   study_hours_per_week: "",
