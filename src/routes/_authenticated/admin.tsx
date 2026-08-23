@@ -53,7 +53,9 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { PasswordStrength } from "@/components/PasswordStrength";
 import { logAudit } from "@/lib/audit";
+import { passwordSchema } from "@/lib/password";
 import { downloadCsv, stamp } from "@/lib/csv";
 import { useRoles, type AppRole } from "@/hooks/useRoles";
 
@@ -406,8 +408,9 @@ function AdminConsole() {
       return;
     }
     if (wantsPassword) {
-      if (account.password.length < 8 || !/[A-Za-z]/.test(account.password) || !/[0-9]/.test(account.password)) {
-        toast.error("Password must be at least 8 characters and include a letter and a number.");
+      const strong = passwordSchema.safeParse(account.password);
+      if (!strong.success) {
+        toast.error(strong.error.issues[0]!.message);
         return;
       }
       if (account.password !== account.confirm) {
@@ -1061,9 +1064,9 @@ function AdminConsole() {
                     value={account.password}
                     onChange={(e) => setAccount((a) => ({ ...a, password: e.target.value }))}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    At least 8 characters, including a letter and a number.
-                  </p>
+                  {account.password.length > 0 && (
+                    <PasswordStrength value={account.password} className="pt-1" />
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="acct-confirm">Confirm new password</Label>

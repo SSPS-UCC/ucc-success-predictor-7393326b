@@ -7,8 +7,10 @@ import { Crests } from "@/components/Crests";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordStrength } from "@/components/PasswordStrength";
 import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/audit";
+import { passwordSchema } from "@/lib/password";
 
 const MAX_ATTEMPTS = 5;
 
@@ -84,8 +86,9 @@ function ResetPasswordPage() {
 
   async function updatePassword(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
-      toast.error("Password must be at least 8 characters and include a letter and a number.");
+    const strong = passwordSchema.safeParse(password);
+    if (!strong.success) {
+      toast.error(strong.error.issues[0]!.message);
       return;
     }
     if (password !== confirm) {
@@ -129,9 +132,7 @@ function ResetPasswordPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-                <p className="text-xs text-muted-foreground">
-                  At least 8 characters, including a letter and a number.
-                </p>
+                <PasswordStrength value={password} className="pt-1" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="confirm-password">Confirm new password</Label>
@@ -144,7 +145,12 @@ function ResetPasswordPage() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={loading || !passwordSchema.safeParse(password).success}
+              >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Update password
               </Button>
