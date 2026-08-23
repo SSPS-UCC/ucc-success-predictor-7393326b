@@ -68,7 +68,22 @@ export const MEANS: Record<FeatureKey, number> = {
 export type Inputs = Partial<Record<FeatureKey, number | null | undefined>> & {
   level100_gpa: number;
   level200_gpa: number;
+  /**
+   * Optional Level 300 GPA. The Ridge model was trained on Level 100/200 records
+   * only, so this is applied as a documented recency correction rather than a
+   * fitted coefficient (see LEVEL300_WEIGHT below).
+   */
+  level300_gpa?: number | null;
 };
+
+/**
+ * Weight given to the Level 300 GPA when a student chooses to supply it.
+ * The correction shifts the Ridge estimate toward the most recent year of
+ * performance, which is the closest proxy for the final year, and the
+ * prediction interval is narrowed because one more year of evidence is known.
+ */
+export const LEVEL300_WEIGHT = 0.35;
+const LEVEL300_SIGMA_FACTOR = 0.82;
 
 /** UCC / KNUST / Legon degree classification bands on the 4.00 CGPA scale. */
 export const CLASS_BANDS = [
