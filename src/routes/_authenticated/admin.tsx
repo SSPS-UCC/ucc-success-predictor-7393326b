@@ -809,6 +809,230 @@ function AdminConsole() {
             </div>
           </TabsContent>
 
+          <TabsContent value="templates" className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+            <form onSubmit={addTemplate} className="panel p-6">
+              <h2 className="flex items-center gap-2 text-lg">
+                <LayoutTemplate className="h-4 w-4 text-gold" /> New recommendation template
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Reusable wording staff can drop into a published recommendation.
+              </p>
+              <div className="mt-5 space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="tn">Template name</Label>
+                  <Input
+                    id="tn"
+                    value={template.name}
+                    onChange={(e) => setTemplate({ ...template, name: e.target.value })}
+                    placeholder="Exam revision plan"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="tt">Title shown to students</Label>
+                  <Input
+                    id="tt"
+                    value={template.title}
+                    onChange={(e) => setTemplate({ ...template, title: e.target.value })}
+                    placeholder="Build a six-week revision plan"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="tc">Category</Label>
+                  <Select
+                    value={template.category}
+                    onValueChange={(v) => setTemplate({ ...template, category: v })}
+                  >
+                    <SelectTrigger id="tc">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="general">General</SelectItem>
+                      <SelectItem value="continuous-assessment">
+                        Continuous assessment (40%)
+                      </SelectItem>
+                      <SelectItem value="examination">Examination (60%)</SelectItem>
+                      <SelectItem value="at-risk">At-risk support</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="tb">Body</Label>
+                  <Textarea
+                    id="tb"
+                    rows={5}
+                    value={template.body}
+                    onChange={(e) => setTemplate({ ...template, body: e.target.value })}
+                    placeholder="Because the examination carries 60%..."
+                  />
+                </div>
+                <Button type="submit">
+                  <Plus className="mr-2 h-4 w-4" /> Save template
+                </Button>
+              </div>
+            </form>
+
+            <div className="space-y-6">
+              <div className="panel p-6">
+                <h2 className="text-lg">Saved templates</h2>
+                <div className="mt-4 space-y-3">
+                  {(templates.data ?? []).map((t) => (
+                    <div key={t.id} className="rounded-lg border border-border p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium">{t.name}</p>
+                          <Badge variant="outline" className="mt-1">
+                            {t.category}
+                          </Badge>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => deleteTemplate(t.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">
+                        {t.body}
+                      </p>
+                    </div>
+                  ))}
+                  {templates.data?.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No templates saved yet.</p>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="panel p-6">
+                <h2 className="flex items-center gap-2 text-lg">
+                  <History className="h-4 w-4 text-accent" /> Recommendation version history
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Every edit to a published recommendation is snapshotted automatically.
+                </p>
+                <div className="mt-4 space-y-2 text-sm">
+                  {(noteVersions.data ?? []).slice(0, 20).map((v) => (
+                    <div key={v.id} className="border-b border-border pb-2 last:border-0">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-medium">{v.title}</span>
+                        <Badge variant="secondary">v{v.version}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(v.created_at).toLocaleString()} &middot; {v.category} &middot;{" "}
+                        {v.is_active ? "visible" : "hidden"}
+                      </p>
+                    </div>
+                  ))}
+                  {noteVersions.data?.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No edits recorded yet.</p>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="audit" className="mt-6">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <ScrollText className="h-4 w-4" /> Append-only record of every action in SSPS.
+                Visible to staff only; nobody can edit or delete entries.
+              </p>
+              <Button variant="outline" size="sm" onClick={exportAudit}>
+                <Download className="mr-2 h-3.5 w-3.5" /> Export audit CSV
+              </Button>
+            </div>
+            <div className="panel overflow-x-auto p-2">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>When</TableHead>
+                    <TableHead>Actor</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Entity</TableHead>
+                    <TableHead>Detail</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(auditLogs.data ?? []).map((a) => (
+                    <TableRow key={a.id}>
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {new Date(a.created_at).toLocaleString()}
+                      </TableCell>
+                      <TableCell>{a.actor_label ?? nameOf(a.actor_id ?? "")}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{a.action}</Badge>
+                      </TableCell>
+                      <TableCell>{a.entity}</TableCell>
+                      <TableCell className="max-w-[22rem] truncate text-xs text-muted-foreground">
+                        {JSON.stringify(a.detail ?? {})}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {auditLogs.data?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-sm text-muted-foreground">
+                        No activity recorded yet.
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="branding" className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div className="panel p-6">
+              <h2 className="flex items-center gap-2 text-lg">
+                <ImageIcon className="h-4 w-4 text-gold" /> Crest uploads
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Replace either crest across the whole system. Transparent PNG works best; images are
+                resized automatically.
+              </p>
+              <div className="mt-5 space-y-5">
+                {[
+                  { key: BRANDING_KEYS.ucc, label: "University of Cape Coast crest", ref: uccInput },
+                  { key: BRANDING_KEYS.code, label: "CoDE crest", ref: codeInput },
+                ].map((c) => (
+                  <div key={c.key} className="rounded-lg border border-border p-4">
+                    <p className="text-sm font-medium">{c.label}</p>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={uploading === c.key}
+                        onClick={() => c.ref.current?.click()}
+                      >
+                        {uploading === c.key ? "Uploading\u2026" : "Upload new crest"}
+                      </Button>
+                      {branding.data?.[c.key] ? (
+                        <Button variant="ghost" size="sm" onClick={() => resetCrest(c.key)}>
+                          Reset to default
+                        </Button>
+                      ) : null}
+                      <input
+                        ref={c.ref}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) void uploadCrest(c.key, file);
+                          e.target.value = "";
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="panel p-6">
+              <h2 className="text-lg">Live preview</h2>
+              <div className="mt-5 flex justify-center rounded-xl border border-gold/50 bg-card p-6">
+                <Crests size={72} />
+              </div>
+            </div>
+          </TabsContent>
+
+
+
           {isAdmin ? (
             <TabsContent value="roles" className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.1fr]">
               <form onSubmit={grantRole} className="panel p-6">
