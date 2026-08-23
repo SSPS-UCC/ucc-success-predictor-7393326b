@@ -486,9 +486,15 @@ function Dashboard() {
 
         <section className="mt-10 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           <div className="panel p-6">
-            <h2 className="flex items-center gap-2 text-lg">
-              <History className="h-4 w-4 text-accent" /> Prediction history
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="flex items-center gap-2 text-lg">
+                <History className="h-4 w-4 text-accent" /> Prediction history
+              </h2>
+              <Button variant="outline" size="sm" onClick={exportHistory}>
+                <Download className="mr-2 h-3.5 w-3.5" /> Export CSV
+              </Button>
+            </div>
+
             {chartData.length > 1 ? (
               <div className="mt-5 h-56">
                 <ResponsiveContainer width="100%" height="100%">
