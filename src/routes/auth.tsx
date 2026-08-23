@@ -128,9 +128,16 @@ function AuthPage() {
 
   async function handleForgotPassword(e: React.FormEvent) {
     e.preventDefault();
-    const email = form.email.trim();
-    if (!z.string().email().safeParse(email).success) {
+    const email = form.email.trim().toLowerCase();
+    if (!z.string().email().max(255).safeParse(email).success) {
       toast.error("Enter the email address you registered with.");
+      return;
+    }
+    // Client-side throttle: one recovery message per 60 seconds per device.
+    const last = Number(localStorage.getItem(RECOVERY_THROTTLE_KEY) ?? 0);
+    const waitMs = RECOVERY_COOLDOWN_MS - (Date.now() - last);
+    if (waitMs > 0) {
+      toast.error(`Please wait ${Math.ceil(waitMs / 1000)}s before requesting another code.`);
       return;
     }
     setLoading(true);
@@ -138,11 +145,16 @@ function AuthPage() {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setLoading(false);
-    if (error) {
-      toast.error(error.message);
+    localStorage.setItem(RECOVERY_THROTTLE_KEY, String(Date.now()));
+    setCooldown(RECOVERY_COOLDOWN_MS / 1000);
+    if (error && /rate|too many/i.test(error.message)) {
+      toast.error("Too many recovery requests. Please try again later.");
       return;
     }
-    toast.success("Recovery instructions sent. Check your inbox for the link or code.");
+    // Never reveal whether an account exists for this address.
+    toast.success(
+      "If that address is registered, a recovery link and verification code are on the way.",
+    );
     navigate({ to: "/reset-password" });
   }
 
