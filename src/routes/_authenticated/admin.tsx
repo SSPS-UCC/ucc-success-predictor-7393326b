@@ -213,6 +213,8 @@ function AdminConsole() {
   const [template, setTemplate] = useState({ name: "", title: "", body: "", category: "general" });
   const [roleTarget, setRoleTarget] = useState("");
   const [roleValue, setRoleValue] = useState<AppRole>("staff");
+  const [account, setAccount] = useState({ email: "", password: "", confirm: "" });
+  const [savingAccount, setSavingAccount] = useState(false);
 
 
   const stats = useMemo(() => {
