@@ -552,9 +552,14 @@ function AdminConsole() {
             {isAdmin ? <TabsTrigger value="roles">Roles</TabsTrigger> : null}
           </TabsList>
 
-
           <TabsContent value="students" className="mt-6">
+            <div className="mb-3 flex justify-end">
+              <Button variant="outline" size="sm" onClick={exportStudents}>
+                <Download className="mr-2 h-3.5 w-3.5" /> Export students CSV
+              </Button>
+            </div>
             <div className="panel overflow-x-auto p-2">
+
               <Table>
                 <TableHeader>
                   <TableRow>
