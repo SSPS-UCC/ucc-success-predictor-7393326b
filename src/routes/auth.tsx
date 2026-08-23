@@ -54,6 +54,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<"signin" | "signup">(mode ?? "signup");
   const [loading, setLoading] = useState(false);
+  const [forgot, setForgot] = useState(false);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
