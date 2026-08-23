@@ -168,6 +168,11 @@ function Dashboard() {
       toast.error("Level 100 and Level 200 GPA are required and must be between 0.00 and 4.00");
       return;
     }
+    const l3 = toNumber(form.level300_gpa);
+    if (l3 !== null && (l3 < 0 || l3 > 4)) {
+      toast.error("Level 300 GPA must be between 0.00 and 4.00");
+      return;
+    }
     const optional: Record<string, number> = {};
     for (const f of OPTIONAL_FIELDS) {
       const v = toNumber(form[f.key]);
