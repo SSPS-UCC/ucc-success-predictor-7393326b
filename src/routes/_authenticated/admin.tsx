@@ -704,7 +704,31 @@ function AdminConsole() {
                 Shown to signed-in students alongside their automated coaching (CA 40% / Exam 60%).
               </p>
               <div className="mt-5 space-y-4">
+                {(templates.data?.length ?? 0) > 0 ? (
+                  <div className="space-y-1.5">
+                    <Label>Start from a template</Label>
+                    <Select
+                      value=""
+                      onValueChange={(id) => {
+                        const t = templates.data?.find((x) => x.id === id);
+                        if (t) setNote({ title: t.title, body: t.body, category: t.category });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a saved template" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(templates.data ?? []).map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            {t.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
                 <div className="space-y-1.5">
+
                   <Label htmlFor="nt">Title</Label>
                   <Input
                     id="nt"
