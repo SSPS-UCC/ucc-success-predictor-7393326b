@@ -100,8 +100,13 @@ function AuthPage() {
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: window.location.origin,
-        data: { full_name: parsed.data.fullName },
+        // Confirmation links return to the sign-in page of this same deployment.
+        emailRedirectTo: `${window.location.origin}/auth?mode=signin`,
+        data: {
+          full_name: parsed.data.fullName,
+          phone: parsed.data.phone,
+          student_id: parsed.data.studentId || null,
+        },
       },
     });
     if (error) {
@@ -110,33 +115,31 @@ function AuthPage() {
       return;
     }
     if (data.session) {
-      await supabase
-        .from("profiles")
-        .update({
-          full_name: parsed.data.fullName,
-          phone: parsed.data.phone,
-          student_id: parsed.data.studentId || null,
-        })
-        .eq("id", data.session.user.id);
+      // Already confirmed (e.g. re-registering a verified address).
       toast.success("Welcome aboard");
       navigate({ to: safeNext, replace: true });
     } else {
-      // No session returned (e.g. confirmation still pending): sign the student
-      // in directly so registration never bounces them off-site.
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: parsed.data.email,
-        password: parsed.data.password,
-      });
-      if (signInError) {
-        toast.success("Account created. Please sign in.");
-        setTab("signin");
-      } else {
-        toast.success("Welcome aboard");
-        navigate({ to: safeNext, replace: true });
-      }
+      setPendingEmail(parsed.data.email);
+      toast.success("Check your inbox to verify your email address.");
     }
 
     setLoading(false);
+  }
+
+  async function handleResendVerification() {
+    if (!pendingEmail) return;
+    setLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: pendingEmail,
+      options: { emailRedirectTo: `${window.location.origin}/auth?mode=signin` },
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Verification email sent again.");
   }
 
   async function handleSignIn(e: React.FormEvent) {
