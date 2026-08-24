@@ -211,7 +211,16 @@ function ResetPasswordPage() {
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Verify code
               </Button>
+              <button
+                type="button"
+                onClick={resendRecovery}
+                disabled={loading}
+                className="w-full text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                Didn't get it? Send a new recovery email
+              </button>
             </form>
+
           </>
         )}
 
