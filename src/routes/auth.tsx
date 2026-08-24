@@ -258,30 +258,48 @@ function AuthPage() {
           </p>
 
           {pendingEmail && (
-            <div className="mt-6 rounded-lg border border-gold/50 bg-secondary p-5">
-              <p className="text-sm font-medium text-foreground">Verify your email address</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                We sent a verification link to <strong>{pendingEmail}</strong>. Open it to activate
-                your account, then sign in. This keeps anyone from registering with someone else's
-                email address.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={handleResendVerification} disabled={loading}>
-                  Resend email
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => {
-                    setPendingEmail(null);
-                    setTab("signin");
-                  }}
-                >
-                  I've verified — sign in
-                </Button>
+            <div className="mt-6 space-y-4">
+              <div className="panel p-6">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/20 text-gold-foreground">
+                    <MailCheck className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <p className="text-base font-medium text-foreground">Verify your email address</p>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      We sent a verification link to{" "}
+                      <strong className="text-foreground">{pendingEmail}</strong>. Open it to
+                      activate your account, then sign in with the same details you just registered
+                      with.
+                    </p>
+                  </div>
+                </div>
+                <ol className="mt-5 space-y-2 border-t border-border pt-4 text-sm text-muted-foreground">
+                  <li>1. Open your inbox and find the SSPS verification email.</li>
+                  <li>2. Click the confirmation link.</li>
+                  <li>3. Return here and sign in.</li>
+                </ol>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={handleResendVerification} disabled={loading}>
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Resend email
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      setPendingEmail(null);
+                      setTab("signin");
+                    }}
+                  >
+                    I&apos;ve verified — sign in
+                  </Button>
+                </div>
               </div>
+              <EmailHelp address={pendingEmail} />
             </div>
           )}
+
 
           {!pendingEmail && (
           <form
