@@ -2,9 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, MailCheck } from "lucide-react";
 
 import { Crests } from "@/components/Crests";
+import { EmailHelp } from "@/components/EmailHelp";
 import { PasswordStrength } from "@/components/PasswordStrength";
 import { passwordSchema } from "@/lib/password";
 import { Button } from "@/components/ui/button";
