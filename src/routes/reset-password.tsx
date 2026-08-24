@@ -217,10 +217,11 @@ function ResetPasswordPage() {
                 disabled={loading}
                 className="w-full text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
               >
-                Didn't get it? Send a new recovery email
+                Didn&apos;t get it? Send a new recovery email
               </button>
             </form>
 
+            <EmailHelp className="mt-4" address={email.trim() || null} />
           </>
         )}
 
