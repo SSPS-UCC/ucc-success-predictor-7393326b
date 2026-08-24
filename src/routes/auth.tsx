@@ -388,20 +388,23 @@ function AuthPage() {
                   : "Sign in"}
             </Button>
             {forgot && (
-              <div className="space-y-2 text-center">
-                <button
-                  type="button"
-                  onClick={() => setForgot(false)}
-                  className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
-                >
-                  Back to sign in
-                </button>
-                <p className="text-xs text-muted-foreground">
-                  Already have a code?{" "}
-                  <Link to="/reset-password" className="underline underline-offset-4">
-                    Enter it here
-                  </Link>
-                </p>
+              <div className="space-y-3">
+                <EmailHelp address={form.email.trim() || null} />
+                <div className="space-y-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setForgot(false)}
+                    className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                  >
+                    Back to sign in
+                  </button>
+                  <p className="text-xs text-muted-foreground">
+                    Already have a code?{" "}
+                    <Link to="/reset-password" className="underline underline-offset-4">
+                      Enter it here
+                    </Link>
+                  </p>
+                </div>
               </div>
             )}
           </form>
