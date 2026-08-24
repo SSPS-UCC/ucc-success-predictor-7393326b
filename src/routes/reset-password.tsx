@@ -47,12 +47,33 @@ function ResetPasswordPage() {
   const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
+    // An expired/used recovery link comes back with an error in the URL hash.
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    if (hash.get("error")) {
+      toast.error("That recovery link has expired. Request a new one below.");
+      window.history.replaceState(null, "", window.location.pathname);
+    }
     // A recovery link signs the user in with a temporary recovery session.
     supabase.auth.getSession().then(({ data }) => {
       setHasSession(Boolean(data.session));
       setReady(true);
     });
   }, []);
+
+  async function resendRecovery() {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      toast.error("Enter your registered email address first.");
+      return;
+    }
+    setLoading(true);
+    await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    toast.success("If that address is registered, a fresh recovery email is on the way.");
+  }
+
 
   async function verifyCode(e: React.FormEvent) {
     e.preventDefault();
@@ -190,7 +211,16 @@ function ResetPasswordPage() {
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Verify code
               </Button>
+              <button
+                type="button"
+                onClick={resendRecovery}
+                disabled={loading}
+                className="w-full text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                Didn't get it? Send a new recovery email
+              </button>
             </form>
+
           </>
         )}
 
