@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 import { Crests } from "@/components/Crests";
+import { EmailHelp } from "@/components/EmailHelp";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -217,10 +218,11 @@ function ResetPasswordPage() {
                 disabled={loading}
                 className="w-full text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
               >
-                Didn't get it? Send a new recovery email
+                Didn&apos;t get it? Send a new recovery email
               </button>
             </form>
 
+            <EmailHelp className="mt-4" address={email.trim() || null} />
           </>
         )}
 
