@@ -14,7 +14,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: z.object({ mode: z.enum(["signin", "signup"]).optional() }),
+  validateSearch: z.object({
+    mode: z.enum(["signin", "signup"]).optional(),
+    redirect: z.string().optional(),
+  }),
   head: () => ({
     meta: [
       { title: "Sign in or register | SSPS | UCC Students Success Prediction System" },
@@ -50,8 +53,13 @@ const RECOVERY_THROTTLE_KEY = "ssps.recovery.lastRequest";
 const RECOVERY_COOLDOWN_MS = 60_000;
 
 function AuthPage() {
-  const { mode } = Route.useSearch();
+  const { mode, redirect: redirectTo } = Route.useSearch();
   const navigate = useNavigate();
+  // Only ever follow same-origin paths supplied through the guard.
+  const safeNext = (
+    redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+      ? redirectTo
+      : "/dashboard") as "/dashboard";
   const [tab, setTab] = useState<"signin" | "signup">(mode ?? "signup");
   const [loading, setLoading] = useState(false);
   const [forgot, setForgot] = useState(false);
@@ -66,7 +74,7 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
+      if (data.session) navigate({ to: safeNext, replace: true });
     });
   }, [navigate]);
 
@@ -111,7 +119,7 @@ function AuthPage() {
         })
         .eq("id", data.session.user.id);
       toast.success("Welcome aboard");
-      navigate({ to: "/dashboard", replace: true });
+      navigate({ to: safeNext, replace: true });
     } else {
       // No session returned (e.g. confirmation still pending): sign the student
       // in directly so registration never bounces them off-site.
@@ -124,7 +132,7 @@ function AuthPage() {
         setTab("signin");
       } else {
         toast.success("Welcome aboard");
-        navigate({ to: "/dashboard", replace: true });
+        navigate({ to: safeNext, replace: true });
       }
     }
 
@@ -143,7 +151,7 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
-    navigate({ to: "/dashboard", replace: true });
+    navigate({ to: safeNext, replace: true });
   }
 
   async function handleForgotPassword(e: React.FormEvent) {
@@ -189,7 +197,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
+    navigate({ to: safeNext, replace: true });
   }
 
   return (
