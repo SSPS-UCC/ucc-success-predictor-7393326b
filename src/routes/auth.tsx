@@ -64,6 +64,7 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [forgot, setForgot] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -256,6 +257,33 @@ function AuthPage() {
                 : "Sign in to run a new prediction and view your history."}
           </p>
 
+          {pendingEmail && (
+            <div className="mt-6 rounded-lg border border-gold/50 bg-secondary p-5">
+              <p className="text-sm font-medium text-foreground">Verify your email address</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                We sent a verification link to <strong>{pendingEmail}</strong>. Open it to activate
+                your account, then sign in. This keeps anyone from registering with someone else's
+                email address.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={handleResendVerification} disabled={loading}>
+                  Resend email
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    setPendingEmail(null);
+                    setTab("signin");
+                  }}
+                >
+                  I've verified — sign in
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!pendingEmail && (
           <form
             onSubmit={forgot ? handleForgotPassword : tab === "signup" ? handleSignUp : handleSignIn}
             className="mt-6 space-y-4"
@@ -358,9 +386,9 @@ function AuthPage() {
               </div>
             )}
           </form>
+          )}
 
-
-          {!forgot && (
+          {!forgot && !pendingEmail && (
             <>
               <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
                 <span className="h-px flex-1 bg-border" /> or{" "}
