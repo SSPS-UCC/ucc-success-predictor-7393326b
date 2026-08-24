@@ -113,9 +113,21 @@ function AuthPage() {
       toast.success("Welcome aboard");
       navigate({ to: "/dashboard", replace: true });
     } else {
-      toast.success("Check your email to confirm your account, then sign in.");
-      setTab("signin");
+      // No session returned (e.g. confirmation still pending): sign the student
+      // in directly so registration never bounces them off-site.
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: parsed.data.email,
+        password: parsed.data.password,
+      });
+      if (signInError) {
+        toast.success("Account created. Please sign in.");
+        setTab("signin");
+      } else {
+        toast.success("Welcome aboard");
+        navigate({ to: "/dashboard", replace: true });
+      }
     }
+
     setLoading(false);
   }
 
