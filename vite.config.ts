@@ -12,4 +12,10 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Render runs a long-lived Node process, so build a standalone Node server
+  // (.output/server/index.mjs). Inside Lovable's own build LOVABLE_NITRO_PRESET
+  // still wins, so the preview/publish target is unaffected.
+  nitro: {
+    preset: "node-server",
+  },
 });

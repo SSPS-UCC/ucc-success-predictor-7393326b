@@ -67,3 +67,20 @@ University of Cape Coast
 
 2026
 Updated deployment
+
+## Deploying on Render (Web Service)
+
+The project builds a standalone Node SSR server (Nitro `node-server` preset).
+
+1. Push the repo to GitHub and in Render choose **New → Web Service** (or **Blueprint** to use `render.yaml`).
+2. Settings:
+   - Runtime: **Node** (Node 22)
+   - Build command: `npm ci && npm run build`
+   - Start command: `npm start` (runs `node .output/server/index.mjs`)
+   - Health check path: `/`
+3. Environment variables (Render → Environment):
+   - `NITRO_PRESET=node-server`
+   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`
+   - `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (used during SSR)
+
+Render injects `PORT` automatically and the server binds to it.
