@@ -64,6 +64,7 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [forgot, setForgot] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -100,8 +101,13 @@ function AuthPage() {
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: window.location.origin,
-        data: { full_name: parsed.data.fullName },
+        // Confirmation links return to the sign-in page of this same deployment.
+        emailRedirectTo: `${window.location.origin}/auth?mode=signin`,
+        data: {
+          full_name: parsed.data.fullName,
+          phone: parsed.data.phone,
+          student_id: parsed.data.studentId || null,
+        },
       },
     });
     if (error) {
@@ -110,33 +116,31 @@ function AuthPage() {
       return;
     }
     if (data.session) {
-      await supabase
-        .from("profiles")
-        .update({
-          full_name: parsed.data.fullName,
-          phone: parsed.data.phone,
-          student_id: parsed.data.studentId || null,
-        })
-        .eq("id", data.session.user.id);
+      // Already confirmed (e.g. re-registering a verified address).
       toast.success("Welcome aboard");
       navigate({ to: safeNext, replace: true });
     } else {
-      // No session returned (e.g. confirmation still pending): sign the student
-      // in directly so registration never bounces them off-site.
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: parsed.data.email,
-        password: parsed.data.password,
-      });
-      if (signInError) {
-        toast.success("Account created. Please sign in.");
-        setTab("signin");
-      } else {
-        toast.success("Welcome aboard");
-        navigate({ to: safeNext, replace: true });
-      }
+      setPendingEmail(parsed.data.email);
+      toast.success("Check your inbox to verify your email address.");
     }
 
     setLoading(false);
+  }
+
+  async function handleResendVerification() {
+    if (!pendingEmail) return;
+    setLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: pendingEmail,
+      options: { emailRedirectTo: `${window.location.origin}/auth?mode=signin` },
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Verification email sent again.");
   }
 
   async function handleSignIn(e: React.FormEvent) {
@@ -253,6 +257,33 @@ function AuthPage() {
                 : "Sign in to run a new prediction and view your history."}
           </p>
 
+          {pendingEmail && (
+            <div className="mt-6 rounded-lg border border-gold/50 bg-secondary p-5">
+              <p className="text-sm font-medium text-foreground">Verify your email address</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                We sent a verification link to <strong>{pendingEmail}</strong>. Open it to activate
+                your account, then sign in. This keeps anyone from registering with someone else's
+                email address.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={handleResendVerification} disabled={loading}>
+                  Resend email
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    setPendingEmail(null);
+                    setTab("signin");
+                  }}
+                >
+                  I've verified — sign in
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!pendingEmail && (
           <form
             onSubmit={forgot ? handleForgotPassword : tab === "signup" ? handleSignUp : handleSignIn}
             className="mt-6 space-y-4"
@@ -355,9 +386,9 @@ function AuthPage() {
               </div>
             )}
           </form>
+          )}
 
-
-          {!forgot && (
+          {!forgot && !pendingEmail && (
             <>
               <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
                 <span className="h-px flex-1 bg-border" /> or{" "}
