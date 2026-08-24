@@ -56,10 +56,10 @@ function AuthPage() {
   const { mode, redirect: redirectTo } = Route.useSearch();
   const navigate = useNavigate();
   // Only ever follow same-origin paths supplied through the guard.
-  const safeNext =
+  const safeNext = (
     redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
       ? redirectTo
-      : "/dashboard";
+      : "/dashboard") as "/dashboard";
   const [tab, setTab] = useState<"signin" | "signup">(mode ?? "signup");
   const [loading, setLoading] = useState(false);
   const [forgot, setForgot] = useState(false);
