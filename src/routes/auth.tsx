@@ -185,27 +185,10 @@ function AuthPage() {
       return;
     }
     // Never reveal whether an account exists for this address.
-    toast.success(
-      "If that address is registered, a recovery link and verification code are on the way.",
-    );
-    navigate({ to: "/reset-password" });
+    toast.success("If that address is registered, a password reset link is on its way.");
   }
 
-  async function handleGoogle() {
-    setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setLoading(false);
-      toast.error(
-        "Google sign-in isn't available on this address. Please register with your email and password instead.",
-      );
-      return;
-    }
-    if (result.redirected) return;
-    navigate({ to: safeNext, replace: true });
-  }
+
 
 
   return (
