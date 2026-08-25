@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: z.object({
@@ -25,7 +24,7 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Register or sign in to the UCC College of Distance Education CGPA prediction system with your email, phone number or Google account.",
+          "Register or sign in to the UCC College of Distance Education CGPA prediction system with your email or phone number.",
       },
       { property: "og:title", content: "Sign in | SSPS | UCC Students Success Prediction System" },
       {
@@ -185,27 +184,10 @@ function AuthPage() {
       return;
     }
     // Never reveal whether an account exists for this address.
-    toast.success(
-      "If that address is registered, a recovery link and verification code are on the way.",
-    );
-    navigate({ to: "/reset-password" });
+    toast.success("If that address is registered, a password reset link is on its way.");
   }
 
-  async function handleGoogle() {
-    setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setLoading(false);
-      toast.error(
-        "Google sign-in isn't available on this address. Please register with your email and password instead.",
-      );
-      return;
-    }
-    if (result.redirected) return;
-    navigate({ to: safeNext, replace: true });
-  }
+
 
 
   return (
@@ -255,11 +237,12 @@ function AuthPage() {
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             {forgot
-              ? "Enter your registered email address. We'll send you a recovery link and a verification code so you can create a new password."
+              ? "Enter your registered email address. We'll email you a secure reset link — open it and you can set a new password right away."
               : tab === "signup"
-                ? "Register with your email and telephone number, or continue with Google."
+                ? "Register with your email and telephone number."
                 : "Sign in to run a new prediction and view your history."}
           </p>
+
 
           {pendingEmail && (
             <div className="mt-6 space-y-4">
@@ -385,7 +368,7 @@ function AuthPage() {
               {forgot
                 ? cooldown > 0
                   ? `Resend in ${cooldown}s`
-                  : "Send recovery code"
+                  : "Send reset link"
                 : tab === "signup"
                   ? "Create account"
                   : "Sign in"}
@@ -401,37 +384,15 @@ function AuthPage() {
                   >
                     Back to sign in
                   </button>
-                  <p className="text-xs text-muted-foreground">
-                    Already have a code?{" "}
-                    <Link to="/reset-password" className="underline underline-offset-4">
-                      Enter it here
-                    </Link>
-                  </p>
                 </div>
               </div>
             )}
+
           </form>
           )}
 
-          {!forgot && !pendingEmail && (
-            <>
-              <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-                <span className="h-px flex-1 bg-border" /> or{" "}
-                <span className="h-px flex-1 bg-border" />
-              </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                size="lg"
-                onClick={handleGoogle}
-                disabled={loading}
-              >
-                Continue with Google
-              </Button>
-            </>
-          )}
+
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
             <Link to="/" className="underline underline-offset-4">
