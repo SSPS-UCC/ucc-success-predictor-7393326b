@@ -24,7 +24,7 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Register or sign in to the UCC College of Distance Education CGPA prediction system with your email, phone number or Google account.",
+          "Register or sign in to the UCC College of Distance Education CGPA prediction system with your email or phone number.",
       },
       { property: "og:title", content: "Sign in | SSPS | UCC Students Success Prediction System" },
       {
