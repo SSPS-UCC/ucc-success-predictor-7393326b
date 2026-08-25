@@ -401,15 +401,10 @@ function AuthPage() {
                   >
                     Back to sign in
                   </button>
-                  <p className="text-xs text-muted-foreground">
-                    Already have a code?{" "}
-                    <Link to="/reset-password" className="underline underline-offset-4">
-                      Enter it here
-                    </Link>
-                  </p>
                 </div>
               </div>
             )}
+
           </form>
           )}
 
