@@ -255,11 +255,12 @@ function AuthPage() {
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             {forgot
-              ? "Enter your registered email address. We'll send you a recovery link and a verification code so you can create a new password."
+              ? "Enter your registered email address. We'll email you a secure reset link — open it and you can set a new password right away."
               : tab === "signup"
-                ? "Register with your email and telephone number, or continue with Google."
+                ? "Register with your email and telephone number."
                 : "Sign in to run a new prediction and view your history."}
           </p>
+
 
           {pendingEmail && (
             <div className="mt-6 space-y-4">
