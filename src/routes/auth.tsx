@@ -198,12 +198,15 @@ function AuthPage() {
     });
     if (result.error) {
       setLoading(false);
-      toast.error("Google sign-in failed. Please try again.");
+      toast.error(
+        "Google sign-in isn't available on this address. Please register with your email and password instead.",
+      );
       return;
     }
     if (result.redirected) return;
     navigate({ to: safeNext, replace: true });
   }
+
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
