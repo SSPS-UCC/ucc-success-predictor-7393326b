@@ -413,25 +413,8 @@ function AuthPage() {
           </form>
           )}
 
-          {!forgot && !pendingEmail && (
-            <>
-              <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-                <span className="h-px flex-1 bg-border" /> or{" "}
-                <span className="h-px flex-1 bg-border" />
-              </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                size="lg"
-                onClick={handleGoogle}
-                disabled={loading}
-              >
-                Continue with Google
-              </Button>
-            </>
-          )}
+
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
             <Link to="/" className="underline underline-offset-4">
