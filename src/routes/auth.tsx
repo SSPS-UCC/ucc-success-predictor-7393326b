@@ -385,7 +385,7 @@ function AuthPage() {
               {forgot
                 ? cooldown > 0
                   ? `Resend in ${cooldown}s`
-                  : "Send recovery code"
+                  : "Send reset link"
                 : tab === "signup"
                   ? "Create account"
                   : "Sign in"}
