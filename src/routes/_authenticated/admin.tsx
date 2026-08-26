@@ -115,7 +115,7 @@ function AdminConsole() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, student_id, programme, study_centre, created_at")
+        .select("id, full_name, student_id, programme, level, study_centre, created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -286,6 +286,7 @@ function AdminConsole() {
         full_name: s.full_name ?? "",
         student_id: s.student_id ?? "",
         programme: s.programme ?? "",
+        level: s.level ?? "",
         study_centre: s.study_centre ?? "",
         predictions: predictionCountByUser.get(s.id) ?? 0,
         registered: new Date(s.created_at).toISOString(),
@@ -556,6 +557,7 @@ function AdminConsole() {
                     <TableHead>Name</TableHead>
                     <TableHead>Student ID</TableHead>
                     <TableHead>Programme</TableHead>
+                    <TableHead>Level</TableHead>
                     <TableHead>Study centre</TableHead>
                     <TableHead className="text-right">Predictions</TableHead>
                   </TableRow>
@@ -566,6 +568,7 @@ function AdminConsole() {
                       <TableCell className="font-medium">{s.full_name ?? "\u2014"}</TableCell>
                       <TableCell>{s.student_id ?? "\u2014"}</TableCell>
                       <TableCell>{s.programme ?? "\u2014"}</TableCell>
+                      <TableCell>{s.level ? `Level ${s.level}` : "\u2014"}</TableCell>
                       <TableCell>{s.study_centre ?? "\u2014"}</TableCell>
                       <TableCell className="text-right">
                         {predictionCountByUser.get(s.id) ?? 0}
@@ -574,7 +577,7 @@ function AdminConsole() {
                   ))}
                   {students.data?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-sm text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
                         No students registered yet.
                       </TableCell>
                     </TableRow>
