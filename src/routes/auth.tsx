@@ -12,6 +12,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+/** CoDE / non-residential programmes offered on the 4.00 CGPA scale. */
+const PROGRAMMES = [
+  "B.Ed. (Basic Education)",
+  "B.Ed. (Early Childhood Education)",
+  "B.Ed. (Junior High School Education)",
+  "B.Ed. (Accounting)",
+  "B.Ed. (Management)",
+  "B.Ed. (Social Studies)",
+  "B.Sc. (Business Administration - Accounting)",
+  "B.Sc. (Business Administration - Management)",
+  "B.Sc. (Business Administration - Human Resource Management)",
+  "B.Sc. (Business Administration - Marketing)",
+  "B.Sc. (Agriculture Extension)",
+  "B.A. (Commonwealth Youth Programme)",
+  "Other",
+] as const;
+
+const LEVELS = ["100", "200", "300", "400"] as const;
 
 export const Route = createFileRoute("/auth")({
   validateSearch: z.object({
@@ -46,6 +72,9 @@ const signUpSchema = z.object({
     .trim()
     .regex(/^[0-9+\s-]{9,20}$/, "Enter a valid telephone number"),
   studentId: z.string().trim().max(30).optional().or(z.literal("")),
+  programme: z.string().trim().min(2, "Select your programme of study").max(120),
+  level: z.enum(LEVELS, { message: "Select your current level" }),
+  studyCentre: z.string().trim().max(120).optional().or(z.literal("")),
   password: passwordSchema,
 });
 
@@ -71,6 +100,9 @@ function AuthPage() {
     email: "",
     phone: "",
     studentId: "",
+    programme: "",
+    level: "",
+    studyCentre: "",
     password: "",
   });
 
@@ -108,6 +140,9 @@ function AuthPage() {
           full_name: parsed.data.fullName,
           phone: parsed.data.phone,
           student_id: parsed.data.studentId || null,
+          programme: parsed.data.programme,
+          level: parsed.data.level,
+          study_centre: parsed.data.studyCentre || null,
         },
       },
     });
@@ -315,6 +350,53 @@ function AuthPage() {
                   <div className="space-y-1.5">
                     <Label htmlFor="studentId">Student ID (optional)</Label>
                     <Input id="studentId" value={form.studentId} onChange={set("studentId")} />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="programme">Programme of study</Label>
+                  <Select
+                    value={form.programme}
+                    onValueChange={(v) => setForm((f) => ({ ...f, programme: v }))}
+                  >
+                    <SelectTrigger id="programme">
+                      <SelectValue placeholder="Select your programme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROGRAMMES.map((p) => (
+                        <SelectItem key={p} value={p}>
+                          {p}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="level">Current level</Label>
+                    <Select
+                      value={form.level}
+                      onValueChange={(v) => setForm((f) => ({ ...f, level: v }))}
+                    >
+                      <SelectTrigger id="level">
+                        <SelectValue placeholder="Select level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LEVELS.map((l) => (
+                          <SelectItem key={l} value={l}>
+                            Level {l}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="studyCentre">Study centre (optional)</Label>
+                    <Input
+                      id="studyCentre"
+                      placeholder="e.g. Cape Coast"
+                      value={form.studyCentre}
+                      onChange={set("studyCentre")}
+                    />
                   </div>
                 </div>
               </>
