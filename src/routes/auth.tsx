@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Loader2, MailCheck } from "lucide-react";
+import { Eye, EyeOff, Loader2, MailCheck } from "lucide-react";
 
 import { Crests } from "@/components/Crests";
 import { EmailHelp } from "@/components/EmailHelp";
@@ -65,6 +65,7 @@ function AuthPage() {
   const [forgot, setForgot] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -343,14 +344,26 @@ function AuthPage() {
                     </button>
                   )}
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete={tab === "signup" ? "new-password" : "current-password"}
-                  value={form.password}
-                  onChange={set("password")}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete={tab === "signup" ? "new-password" : "current-password"}
+                    value={form.password}
+                    onChange={set("password")}
+                    className="pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    className="absolute right-0 top-0 flex h-full items-center justify-center px-3 text-muted-foreground hover:text-foreground focus:text-foreground"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
                 {tab === "signup" && <PasswordStrength value={form.password} className="pt-1" />}
               </div>
             )}
