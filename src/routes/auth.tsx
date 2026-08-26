@@ -65,6 +65,7 @@ function AuthPage() {
   const [forgot, setForgot] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
