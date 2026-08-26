@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, MailCheck } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, Loader2, MailCheck } from "lucide-react";
 
 import { Crests } from "@/components/Crests";
 import { EmailHelp } from "@/components/EmailHelp";

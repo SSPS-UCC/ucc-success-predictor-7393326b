@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Loader2, MailCheck } from "lucide-react";
+import { Eye, EyeOff, Loader2, MailCheck } from "lucide-react";
 
 import { Crests } from "@/components/Crests";
 import { EmailHelp } from "@/components/EmailHelp";
